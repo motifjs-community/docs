@@ -7,7 +7,8 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "docs:sync": "dotnet run --project server/MotifJs.Docs --no-launch-profile -- sync"
   },
   "dependencies": {
     "@motifx/core": "^1.0.1"

@@ -5,3 +5,11 @@ dist/
 .env.*
 .DS_Store
 Thumbs.db
+
+# .NET server
+server/**/bin/
+server/**/obj/
+server/**/App_Data/
+*.db
+*.db-shm
+*.db-wal
