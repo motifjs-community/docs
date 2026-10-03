@@ -6,7 +6,7 @@ export const codeExamples: CodeVariants = {
     declarative: {
         class: `import { Component, reactive } from '@motifx/core';
 
-class Counter extends Component<HTMLDivElement> {
+export class Counter extends Component<HTMLDivElement> {
   state = reactive({ count: 0 });
 
   view() {
@@ -17,7 +17,7 @@ class Counter extends Component<HTMLDivElement> {
 }`,
         function: `import { reactive } from '@motifx/core';
 
-function Counter() {
+export function Counter() {
   const state = reactive({ count: 0 });
 
   return <button onclick={() => state.count++}>
@@ -26,7 +26,7 @@ function Counter() {
 }`,
         options: `import { reactive } from '@motifx/core';
 
-const Counter = () => ({
+export const Counter = () => ({
   el: 'div',
   data: reactive({ count: 0 }),
 
@@ -40,7 +40,7 @@ const Counter = () => ({
     imperative: {
         class: `import { Component } from '@motifx/core';
 
-class Counter extends Component<HTMLDivElement> {
+export class Counter extends Component<HTMLDivElement> {
   initializeComponent() {
     this.controls.add(
       <button onclick={() => this.controls.add('Another control')}>
@@ -49,14 +49,14 @@ class Counter extends Component<HTMLDivElement> {
     );
   }
 }`,
-        function: `function Counter() {
+        function: `export function Counter() {
   return <div initializeComponent={(component) => {
     component.controls.add(
       <button>Add a control</button>
     );
   }} />;
 }`,
-        options: `const Counter = () => ({
+        options: `export const Counter = () => ({
   el: 'div',
 
   initializeComponent() {
@@ -66,6 +66,31 @@ class Counter extends Component<HTMLDivElement> {
   },
 });`
     }
+};
+
+// A class component is mounted as an instance; Function and Options components go in as a JSX tag.
+// Mounting looks the same in both writing styles.
+const mountClass = `import { Application } from '@motifx/core';
+import { Counter } from './counter';
+
+const app = Application.CreateBuilder().build();
+app.run('#app', new Counter());`;
+
+const mountTag = `import { Application } from '@motifx/core';
+import { Counter } from './counter';
+
+const app = Application.CreateBuilder().build();
+app.run('#app', <Counter />);`;
+
+const mountByComponentStyle: Record<ComponentStyle, string> = {
+    class: mountClass,
+    function: mountTag,
+    options: mountTag
+};
+
+export const mountExamples: CodeVariants = {
+    declarative: mountByComponentStyle,
+    imperative: mountByComponentStyle
 };
 
 export const writingStyles: { value: WritingStyle; label: string }[] = [

@@ -1,4 +1,4 @@
-import { codeExamples, type CodeVariants } from './code-examples';
+import { codeExamples, mountExamples, type CodeVariants } from './code-examples';
 
 export type DocsLocale = 'en' | 'tr';
 
@@ -69,16 +69,10 @@ export default defineConfig({
         id: 'mount-app',
         title: { en: 'Mount the application', tr: 'Uygulamayı bağlayın' },
         paragraphs: {
-            en: ['Build an Application and mount the root component into an element in the document. Add a router when the application has multiple views.'],
-            tr: ['Bir Application oluşturup kök component’i belgedeki bir elemente bağlayın. Uygulama birden fazla görünüm içeriyorsa router ekleyin.']
+            en: ['Build an Application and mount the root component into an element in the document. A Class component is passed as an instance; Function and Options components are passed as a JSX tag. Add a router when the application has multiple views.'],
+            tr: ['Bir Application oluşturup kök component’i belgedeki bir elemente bağlayın. Class component örnek (instance) olarak, Function ve Options component’leri JSX etiketi olarak verilir. Uygulama birden fazla görünüm içeriyorsa router ekleyin.']
         },
-        code: {
-            file: 'main.tsx',
-            source: `import { Application } from '@motifx/core';
-
-const app = Application.CreateBuilder().build();
-app.run('#app', new Counter());`
-        }
+        code: { file: 'main.tsx', source: mountExamples }
     }
 ];
 
