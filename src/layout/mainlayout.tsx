@@ -1,6 +1,7 @@
 import { reactive, RouterView, useNavigation } from "@motifx/core";
 import { localeState, setLocale, supportedLocales, t } from '../i18n';
 import SiteFooter from './SiteFooter';
+import { BrandMark, BrandWordmark } from '../components/Brand';
 
 export default function MainLayout() {
     const navigation = useNavigation();
@@ -16,8 +17,8 @@ export default function MainLayout() {
             <header class={() => navigation.uri.startsWith('/docs/') ? 'site-header is-docs-reader' : 'site-header'}>
                 <div class="header-inner">
                     <a href="/" class="brand" aria-label={() => t('header.home')}>
-                        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
-                        <span class="brand-name">Motif<span>JS</span></span>
+                        <BrandMark />
+                        <BrandWordmark />
                     </a>
 
                     <nav class="primary-nav" aria-label={() => t('header.navLabel')}>

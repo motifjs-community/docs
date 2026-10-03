@@ -1,5 +1,6 @@
 import { useNavigation } from '@motifx/core';
 import { t } from '../i18n';
+import { BrandMark, BrandWordmark } from '../components/Brand';
 
 export default function SiteFooter() {
     const navigation = useNavigation();
@@ -9,8 +10,8 @@ export default function SiteFooter() {
             <div class="footer-main">
                 <div class="footer-brand-column">
                     <a href="/" class="footer-brand" rel="router" aria-label={() => t('header.home')}>
-                        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
-                        <span class="brand-name">Motif<span>JS</span></span>
+                        <BrandMark />
+                        <BrandWordmark />
                     </a>
                     <p>{() => t('footer.description')}</p>
                     <a class="footer-github" href="https://github.com/motifjsdev/motifjs" target="_blank" rel="noreferrer">{() => t('footer.openSource')} <span aria-hidden="true">↗</span></a>

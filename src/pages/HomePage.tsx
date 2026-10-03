@@ -1,4 +1,5 @@
 import { t } from '../i18n';
+import { BrandMark } from '../components/Brand';
 import { codeExamples, writingStyles, componentStyles } from '../content/docs/code-examples';
 import { HighlightedCode } from '../components/HighlightedCode';
 import { codeStyle, resolveCode, setComponentStyle, setWritingStyle } from '../preferences/code-style';
@@ -19,7 +20,8 @@ const secondaryRibbons = Array.from({ length: 12 }, (_, index) => {
     };
 });
 
-type RibbonVariant = 'state' | 'routing' | 'services' | 'lifecycle' | 'virtualization' | 'examples';
+// Only the featured card animates; the other cards use static patterns (.explore-pattern-*).
+type RibbonVariant = 'state';
 
 function CardRibbons(props: { variant: RibbonVariant }) {
     const gradientA = `card-ribbon-${props.variant}-a`;
@@ -105,7 +107,7 @@ export default function HomePage() {
                     <div class="docs-preview" id="examples" aria-label={() => t('home.hero.previewLabel')}>
                         <div class="docs-preview-topbar">
                             <div class="preview-brand">
-                                <span class="preview-brand-mark" aria-hidden="true">m</span>
+                                <BrandMark />
                                 <span>motif<span>js</span></span>
                             </div>
                             <div class="preview-product-nav"><span>{() => t('home.preview.docs')}</span><span>{() => t('home.preview.apiReference')}</span><span>{() => t('header.examples')}</span></div>
@@ -234,7 +236,7 @@ export default function HomePage() {
                             <div class="style-flow" aria-hidden="true">
                                 <div class="flow-pill flow-declarative"><i>&lt;/&gt;</i><span>Declarative</span></div>
                                 <div class="flow-connector"><span></span></div>
-                                <div class="flow-core"><span class="preview-brand-mark">m</span><b>MotifJS</b><small>{() => t('home.approach.sameRuntime')}</small></div>
+                                <div class="flow-core"><BrandMark /><b>MotifJS</b><small>{() => t('home.approach.sameRuntime')}</small></div>
                                 <div class="flow-connector"><span></span></div>
                                 <div class="flow-pill flow-imperative"><i>＋</i><span>Imperative</span></div>
                             </div>
@@ -305,31 +307,31 @@ export default function HomePage() {
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
                         <a class="explore-card" href="#get-started">
-                            <CardRibbons variant="routing" />
+                            <span class="explore-pattern explore-pattern-routing" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-router" aria-hidden="true"><i></i><i></i><i></i></span>
                             <div><span class="mini-label">{() => t('home.explore.routingLabel')}</span><h3>{() => t('home.explore.routingTitle')}</h3><p>{() => t('home.explore.routingDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
                         <a class="explore-card" href="#get-started">
-                            <CardRibbons variant="services" />
+                            <span class="explore-pattern explore-pattern-services" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-service" aria-hidden="true"><i></i><i></i></span>
                             <div><span class="mini-label">{() => t('home.explore.servicesLabel')}</span><h3>{() => t('home.explore.servicesTitle')}</h3><p>{() => t('home.explore.servicesDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
                         <a class="explore-card" href="#runtime">
-                            <CardRibbons variant="lifecycle" />
+                            <span class="explore-pattern explore-pattern-lifecycle" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-lifecycle" aria-hidden="true"><i></i><i></i></span>
                             <div><span class="mini-label">{() => t('home.explore.lifecycleLabel')}</span><h3>{() => t('home.explore.lifecycleTitle')}</h3><p>{() => t('home.explore.lifecycleDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
                         <a class="explore-card" href="#get-started">
-                            <CardRibbons variant="virtualization" />
+                            <span class="explore-pattern explore-pattern-virtualization" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-virtualization" aria-hidden="true"><i></i><i></i><i></i></span>
                             <div><span class="mini-label">{() => t('home.explore.virtualizationLabel')}</span><h3>{() => t('home.explore.virtualizationTitle')}</h3><p>{() => t('home.explore.virtualizationDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
                         <a class="explore-card explore-card-wide" href="#examples">
-                            <CardRibbons variant="examples" />
+                            <span class="explore-pattern explore-pattern-examples" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-code" aria-hidden="true">&lt;/&gt;</span>
                             <div><span class="mini-label">{() => t('home.explore.examplesLabel')}</span><h3>{() => t('home.explore.examplesTitle')}</h3><p>{() => t('home.explore.examplesDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
@@ -364,7 +366,7 @@ export default function HomePage() {
                         <a class="button button-primary" href="https://github.com/motifjsdev/motifjs" target="_blank" rel="noreferrer">{() => t('home.community.repository')} <span aria-hidden="true">↗</span></a>
                         <a class="button button-quiet" href="https://github.com/motifjsdev/motifjs/issues" target="_blank" rel="noreferrer">{() => t('home.community.discussions')} <span aria-hidden="true">↗</span></a>
                     </div>
-                    <div class="community-mark" aria-hidden="true"><span>m</span><i></i><i></i><i></i></div>
+                    <div class="community-mark" aria-hidden="true"><BrandMark /><i></i><i></i><i></i></div>
                 </div>
             </section>
 

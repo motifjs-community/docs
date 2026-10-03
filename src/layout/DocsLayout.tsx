@@ -3,6 +3,7 @@ import { docsCategories, findCategory, findDoc, type DocsLocale } from '../conte
 import { writingStyles, componentStyles } from '../content/docs/code-examples';
 import { codeStyle, setComponentStyle, setWritingStyle } from '../preferences/code-style';
 import { localeState, t } from '../i18n';
+import { BrandMark } from '../components/Brand';
 
 /** A section counts as "current" once its top passes this line (px from the viewport top). */
 const activeSectionLine = 140;
@@ -175,7 +176,7 @@ export default function DocsLayout() {
                     <span class="docs-menu-icon" aria-hidden="true"><i></i><i></i><i></i></span>
                 </button>
                 <a class="docs-toolbar-brand" href="/docs" rel="router">
-                    <span class="docs-toolbar-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <BrandMark />
                     <span>{() => t('docs.detail.root')}</span>
                 </a>
                 <div class="docs-toolbar-path">
@@ -191,7 +192,7 @@ export default function DocsLayout() {
                 <aside id="docs-sidebar" class={() => sidebar.mobileOpen ? 'docs-sidebar is-mobile-open' : 'docs-sidebar'} aria-label={() => t('docs.detail.navigation')}>
                     <div class="docs-drawer-header">
                         <a class="docs-toolbar-brand" href="/docs" rel="router">
-                            <span class="docs-toolbar-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+                            <BrandMark />
                             <span>{() => t('docs.detail.root')}</span>
                         </a>
                         <button
