@@ -1,0 +1,410 @@
+/*
+ * Design tokens: the single source of every colour, type, shape, depth, motion and layout value.
+ * Component styles (style.css) only reference these custom properties.
+ *
+ *   1. Primitives   raw palette; lighter colours have smaller numbers (--violet-200 is lighter than --violet-500)
+ *   2. Scales       typography, radius, depth, motion, stacking, layout
+ *   3. Semantic     what a colour is for; the light theme redefines these, not the components
+ *   4. Component    values specific to one component that also change with the theme
+ */
+
+/* 1. Primitives */
+:root {
+    --white: #ffffff;
+    --black: #000000;
+    --gray-50: #fbfcfe;
+    --gray-75: #f5f6fa;
+    --gray-100: #f4f5fa;
+    --gray-125: #f3f5f9;
+    --gray-150: #eef0f6;
+    --gray-175: #eceef4;
+    --gray-200: #e5e8ef;
+    --gray-225: #d0d4df;
+    --gray-250: #a5aab7;
+    --gray-800: #10141d;
+    --gray-825: #10141c;
+    --gray-850: #10131a;
+    --gray-875: #080a0e;
+    --gray-900: #05070b;
+    --slate-100: #d5dced;
+    --slate-150: #c6cbdc;
+    --slate-175: #b7c4dc;
+    --slate-200: #a9c3c5;
+    --slate-300: #969fb0;
+    --slate-325: #8d97ab;
+    --slate-350: #8a93a6;
+    --slate-375: #7d8799;
+    --slate-400: #747f92;
+    --slate-450: #6b7488;
+    --slate-475: #687489;
+    --slate-500: #677189;
+    --slate-525: #535d6f;
+    --slate-600: #3b4a63;
+    --slate-625: #354054;
+    --slate-675: #293449;
+    --slate-700: #252b37;
+    --slate-725: #1f293d;
+    --slate-750: #1b2435;
+    --slate-850: #090d18;
+    --violet-75: #e6e2ff;
+    --violet-125: #d1ccff;
+    --violet-200: #c1b5ff;
+    --violet-225: #c3a6ff;
+    --violet-250: #b6aaff;
+    --violet-275: #aaa0ff;
+    --violet-300: #9d8cff;
+    --violet-325: #9e86ed;
+    --violet-350: #8e7dff;
+    --violet-375: #8580ee;
+    --violet-400: #8174e6;
+    --violet-425: #786bff;
+    --violet-450: #786ce1;
+    --violet-475: #777caa;
+    --violet-500: #7162dc;
+    --violet-525: #6a56d3;
+    --violet-550: #6a45d6;
+    --violet-575: #6254bd;
+    --violet-600: #5a49cf;
+    --violet-625: #51499a;
+    --violet-650: #473a91;
+    --violet-675: #41376f;
+    --violet-725: #292449;
+    --violet-775: #18182b;
+    --blue-150: #9ed2ff;
+    --blue-225: #8fb8ff;
+    --blue-250: #70b7f2;
+    --blue-500: #1f6aa5;
+    --blue-525: #2459c4;
+    --teal-125: #92e6dc;
+    --teal-175: #7fdcc6;
+    --teal-200: #67d9d4;
+    --teal-225: #65cec5;
+    --teal-250: #73bebe;
+    --teal-275: #54bfb7;
+    --teal-300: #4ebdc9;
+    --teal-325: #42a7a6;
+    --teal-350: #369f95;
+    --teal-400: #278d91;
+    --teal-450: #11877a;
+    --teal-475: #0b7f6e;
+    --teal-500: #477771;
+    --amber-125: #f2d27c;
+    --amber-175: #f5b97a;
+    --amber-450: #a8560c;
+    --amber-500: #8a5b00;
+    --red-200: #ff9fc4;
+    --red-225: #ff8fb0;
+    --red-450: #c0306c;
+    --red-475: #c42a5c;
+}
+
+/* 2. Scales */
+:root {
+    --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --font-code: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --font-size-1: 6px;
+    --font-size-2: 7px;
+    --font-size-3: 8px;
+    --font-size-4: 10px;
+    --font-size-5: 11px;
+    --font-size-6: 12px;
+    --font-size-7: 13px;
+    --font-size-8: 14px;
+    --font-size-9: 15px;
+    --font-size-10: 16px;
+    --font-size-11: 17px;
+    --font-size-12: 18px;
+    --font-size-13: 19px;
+    --font-size-14: 22px;
+    --font-size-15: 25px;
+    --font-size-16: 29px;
+    --font-size-17: 30px;
+    --font-size-18: 31px;
+    --font-size-19: 32px;
+    --font-size-20: 34px;
+    --font-size-21: 64px;
+    --font-size-22: 84px;
+    --font-size-display-1: clamp(27px, 3.3vw, 36px);
+    --font-size-display-2: clamp(30px, 4vw, 42px);
+    --font-size-display-3: clamp(31px, 3.8vw, 43px);
+    --font-size-display-4: clamp(32px, 3.8vw, 43px);
+    --font-size-display-5: clamp(34px, 9vw, 44px);
+    --font-size-display-6: clamp(32px, 4vw, 45px);
+    --font-size-display-7: clamp(34px, 4vw, 45px);
+    --font-size-display-8: clamp(36px, 4vw, 48px);
+    --font-size-display-9: clamp(35px, 4.2vw, 49px);
+    --font-size-display-10: clamp(38px, 10vw, 52px);
+    --font-size-display-11: clamp(42px, 12vw, 56px);
+    --font-size-display-12: clamp(44px, 4.7vw, 60px);
+    --font-size-display-13: clamp(42px, 6vw, 62px);
+    --font-size-display-14: clamp(48px, 7vw, 62px);
+    --font-size-display-15: clamp(50px, 9vw, 68px);
+    --font-weight-1: 400;
+    --font-weight-2: 500;
+    --font-weight-3: 530;
+    --font-weight-4: 550;
+    --font-weight-5: 560;
+    --font-weight-6: 570;
+    --font-weight-7: 580;
+    --font-weight-8: 590;
+    --font-weight-9: 600;
+    --font-weight-10: 610;
+    --font-weight-11: 620;
+    --font-weight-12: 630;
+    --font-weight-13: 640;
+    --font-weight-14: 650;
+    --font-weight-15: 680;
+    --font-weight-16: 700;
+    --font-weight-17: 760;
+    --font-weight-18: 800;
+    --line-height-1: 1;
+    --line-height-2: 1.045;
+    --line-height-3: 1.05;
+    --line-height-4: 1.1;
+    --line-height-5: 1.12;
+    --line-height-6: 1.13;
+    --line-height-7: 1.3;
+    --line-height-8: 1.35;
+    --line-height-9: 1.5;
+    --line-height-10: 1.55;
+    --line-height-11: 1.6;
+    --line-height-12: 1.65;
+    --line-height-13: 1.7;
+    --line-height-14: 1.75;
+    --line-height-15: 1.8;
+    --letter-spacing-1: -0.067em;
+    --letter-spacing-2: -0.065em;
+    --letter-spacing-3: -0.06em;
+    --letter-spacing-4: -0.055em;
+    --letter-spacing-5: -0.045em;
+    --letter-spacing-6: -0.04em;
+    --letter-spacing-7: -0.035em;
+    --letter-spacing-8: -0.025em;
+    --letter-spacing-9: 0.035em;
+    --letter-spacing-10: 0.04em;
+    --letter-spacing-11: 0.05em;
+    --letter-spacing-12: 0.055em;
+    --letter-spacing-13: 0.075em;
+    --letter-spacing-14: 0.09em;
+    --letter-spacing-15: 0.1em;
+    --letter-spacing-16: 0.11em;
+    --letter-spacing-17: 0.13em;
+    --radius-1: 2px;
+    --radius-2: 3px;
+    --radius-3: 4px;
+    --radius-4: 5px;
+    --radius-5: 6px;
+    --radius-6: 7px;
+    --radius-7: 8px;
+    --radius-8: 9px;
+    --radius-9: 10px;
+    --radius-10: 11px;
+    --radius-11: 12px;
+    --radius-12: 14px;
+    --radius-pill: 999px;
+    --radius-round: 50%;
+    --duration-fast: 140ms;
+    --duration-base: 160ms;
+    --duration-moderate: 180ms;
+    --duration-slow: 220ms;
+    --duration-slower: 260ms;
+    --ease-standard: ease;
+    --ease-emphasized: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --z-base: 0;
+    --z-raised: 1;
+    --z-sticky: 8;
+    --z-header: 10;
+    --z-dropdown: 12;
+    --z-overlay: 39;
+    --z-drawer: 40;
+    --z-behind: -1;
+    --layout-max-wide: 1240px;
+    --layout-max-content: 1110px;
+    --layout-docs-max: 1400px;
+    --layout-docs-gutter: 32px;
+    --layout-docs-toolbar-height: 54px;
+    --layout-docs-sticky-top: calc(var(--layout-docs-toolbar-height) + 32px);
+}
+
+/* 3. Semantic: dark theme is the default */
+:root {
+    --color-bg-page: var(--gray-875);
+    --color-bg-surface: var(--gray-850);
+    --color-bg-card: var(--gray-825);
+    --color-border: var(--slate-700);
+    --color-text-primary: var(--gray-175);
+    --color-text-muted: var(--slate-300);
+    --color-text-subtle: var(--slate-400);
+    --color-bg-hero: var(--gray-875);
+    --color-bg-raised: var(--gray-800);
+    --color-border-header: color-mix(in srgb, var(--white) 7.5%, transparent);
+    --color-accent: var(--violet-300);
+    --color-accent-text: var(--violet-250);
+    --color-bg-deep: var(--slate-850);
+    --color-scrollbar-thumb: color-mix(in srgb, var(--color-accent) 24%, var(--color-border));
+    --color-scrollbar-thumb-hover: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+    --color-bg-code: color-mix(in srgb, var(--color-bg-card) 72%, var(--gray-900));
+    --color-text-code: var(--slate-100);
+    --color-syntax-keyword: var(--violet-225);
+    --color-syntax-literal: var(--red-200);
+    --color-syntax-string: var(--teal-175);
+    --color-syntax-number: var(--amber-175);
+    --color-syntax-comment: var(--slate-500);
+    --color-syntax-function: var(--blue-225);
+    --color-syntax-type: var(--amber-125);
+    --color-syntax-property: var(--slate-175);
+    --color-syntax-tag: var(--red-225);
+    --color-syntax-attribute: var(--blue-150);
+    --color-syntax-punctuation: var(--slate-325);
+}
+
+:root[data-theme="light"] {
+    --color-bg-page: var(--gray-50);
+    --color-bg-surface: var(--gray-125);
+    --color-bg-card: var(--white);
+    --color-border: var(--gray-200);
+    --color-text-primary: var(--slate-750);
+    --color-text-muted: var(--slate-475);
+    --color-text-subtle: var(--slate-375);
+    --color-bg-hero: var(--gray-100);
+    --color-bg-raised: var(--gray-150);
+    --color-accent-text: var(--violet-600);
+    --color-border-header: color-mix(in srgb, var(--slate-725) 12%, transparent);
+    --color-bg-code: var(--gray-75);
+    --color-text-code: var(--slate-675);
+    --color-syntax-keyword: var(--violet-550);
+    --color-syntax-literal: var(--red-450);
+    --color-syntax-string: var(--teal-475);
+    --color-syntax-number: var(--amber-450);
+    --color-syntax-comment: var(--slate-350);
+    --color-syntax-function: var(--blue-525);
+    --color-syntax-type: var(--amber-500);
+    --color-syntax-property: var(--slate-600);
+    --color-syntax-tag: var(--red-475);
+    --color-syntax-attribute: var(--blue-500);
+    --color-syntax-punctuation: var(--slate-450);
+}
+
+@media (max-width: 760px) {
+    :root {
+        --layout-docs-gutter: 18px;
+        --layout-docs-toolbar-height: 52px;
+    }
+}
+
+/* 4. Component */
+:root {
+    --hero-mask: linear-gradient(90deg, var(--gray-875) 0%, color-mix(in srgb, var(--gray-875) 92%, transparent) 20%, color-mix(in srgb, var(--gray-875) 10%, transparent) 67%, color-mix(in srgb, var(--gray-875) 20%, transparent) 100%), linear-gradient(0deg, color-mix(in srgb, var(--gray-875) 72%, transparent), transparent 28%, transparent 82%, color-mix(in srgb, var(--gray-875) 30%, transparent));
+    --hero-ribbons-opacity: 0.82;
+    --button-primary-bg: var(--gray-100);
+    --button-primary-text: var(--violet-775);
+    --button-primary-shadow: 0 5px 25px color-mix(in srgb, var(--violet-300) 15%, transparent);
+    --button-primary-hover-bg: var(--white);
+    --docs-preview-bg: color-mix(in srgb, var(--slate-850) 95%, transparent);
+    --docs-preview-shadow: 0 32px 95px color-mix(in srgb, var(--black) 58%, transparent), 0 0 80px color-mix(in srgb, var(--violet-500) 13%, transparent);
+    --docs-preview-topbar-bg: color-mix(in srgb, var(--white) 1.8%, transparent);
+    --preview-sidebar-bg: color-mix(in srgb, var(--white) 1.2%, transparent);
+    --preview-brand-text: var(--gray-125);
+    --preview-article-h2-text: var(--gray-150);
+    --preview-product-nav-text: var(--slate-375);
+    --preview-side-link-text: var(--slate-350);
+    --preview-breadcrumb-text: var(--slate-375);
+    --preview-article-p-text: var(--slate-300);
+    --preview-side-caption-text: var(--slate-450);
+    --preview-side-link-is-current-bg: color-mix(in srgb, var(--violet-450) 13%, transparent);
+    --preview-side-link-is-current-text: var(--violet-125);
+    --preview-note-bg: color-mix(in srgb, var(--teal-325) 5.5%, transparent);
+    --preview-note-text: var(--slate-200);
+    --preview-next-strong-text: var(--gray-225);
+    --start-inner-p-text: var(--color-text-muted);
+    --install-label-text: var(--slate-300);
+    --install-card-border: var(--color-border);
+    --install-card-bg: color-mix(in srgb, var(--color-bg-page) 78%, transparent);
+    --install-card-code-text: var(--gray-200);
+    --install-card-a-text: var(--violet-250);
+    --terminal-prompt-text: var(--teal-175);
+    --home-footer-border: var(--color-border);
+    --home-footer-text: var(--color-text-subtle);
+    --approach-card-featured-bg: radial-gradient(ellipse at 77% 54%, color-mix(in srgb, var(--color-accent) 11%, transparent), transparent 56%),
+        var(--color-bg-card);
+    --card-ribbon-art-opacity: 0.58;
+    --explore-card-hover-card-ribbon-art-opacity: 0.72;
+    --runtime-section-bg: var(--color-bg-surface);
+    --runtime-visual-bg: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--color-accent) 9%, transparent), transparent 65%),
+        var(--color-bg-card);
+    --runtime-state-card-shadow: 0 12px 28px color-mix(in srgb, var(--black) 12%, transparent);
+    --principles-section-bg: var(--color-bg-raised);
+    --footer-github-text: var(--violet-275);
+    --docs-category-card-bg: color-mix(in srgb, var(--color-bg-card) 93%, transparent);
+    --docs-category-card-shadow: 0 14px 45px color-mix(in srgb, var(--black) 10%, transparent);
+    --docs-category-card-featured-bg: radial-gradient(ellipse at 100% 0, color-mix(in srgb, var(--color-accent) 11%, transparent), transparent 58%),
+        var(--color-bg-card);
+    --docs-code-copy-is-copied-text: var(--teal-275);
+    --shadow-brand-mark: 0 0 20px color-mix(in srgb, var(--violet-350) 20%, transparent);
+    --shadow-eyebrow-dot: 0 0 13px color-mix(in srgb, var(--teal-175) 80%, transparent);
+    --shadow-preview-side-link-is-current-i: 0 0 7px var(--violet-300);
+    --shadow-segment-is-selected: inset 0 0 0 1px color-mix(in srgb, var(--violet-275) 16%, transparent);
+    --shadow-icon-pulse-i: 0 0 9px color-mix(in srgb, var(--violet-450) 50%, transparent);
+    --shadow-language-menu: 0 16px 38px color-mix(in srgb, var(--black) 28%, transparent);
+    --shadow-feature-card: 0 8px 28px color-mix(in srgb, var(--black) 8%, transparent);
+    --shadow-feature-card-hover: 0 15px 38px color-mix(in srgb, var(--black) 15%, transparent);
+    --shadow-eyebrow-dot-2: 0 0 12px color-mix(in srgb, var(--teal-350) 50%, transparent);
+    --shadow-flow-core: 0 0 28px color-mix(in srgb, var(--color-accent) 12%, transparent);
+    --shadow-flow-connector-span: 0 0 8px var(--violet-350);
+    --shadow-runtime-state-card-i: 0 0 9px var(--teal-175);
+    --shadow-runtime-pulse-line-span: 0 0 12px var(--violet-300);
+    --shadow-approach-card: 0 8px 24px color-mix(in srgb, var(--slate-725) 3.5%, transparent);
+    --shadow-docs-eyebrow-i: 0 0 12px color-mix(in srgb, var(--teal-175) 75%, transparent);
+    --shadow-docs-code-pref-option-is-selected: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent);
+    --shadow-docs-tree-link-is-active-docs-tree-active-mark: 0 0 8px color-mix(in srgb, var(--color-accent) 80%, transparent);
+    --shadow-docs-sidebar: 18px 0 48px color-mix(in srgb, var(--black) 35%, transparent);
+}
+
+:root[data-theme="light"] {
+    --hero-mask: linear-gradient(90deg, var(--gray-100) 0%, color-mix(in srgb, var(--gray-100) 92%, transparent) 20%, color-mix(in srgb, var(--gray-100) 8%, transparent) 68%, color-mix(in srgb, var(--gray-100) 13%, transparent) 100%), linear-gradient(0deg, color-mix(in srgb, var(--gray-100) 65%, transparent), transparent 28%, transparent 82%, color-mix(in srgb, var(--gray-100) 24%, transparent));
+    --hero-ribbons-opacity: 0.53;
+    --button-primary-bg: var(--violet-725);
+    --button-primary-text: var(--white);
+    --button-primary-shadow: 0 5px 25px color-mix(in srgb, var(--violet-650) 16%, transparent);
+    --button-primary-hover-bg: var(--violet-675);
+    --docs-preview-bg: var(--white);
+    --docs-preview-shadow: 0 28px 76px color-mix(in srgb, var(--slate-675) 17%, transparent), 0 0 70px color-mix(in srgb, var(--violet-500) 12%, transparent);
+    --docs-preview-topbar-bg: var(--gray-50);
+    --preview-sidebar-bg: var(--gray-50);
+    --preview-brand-text: var(--slate-725);
+    --preview-article-h2-text: var(--slate-725);
+    --preview-product-nav-text: var(--slate-475);
+    --preview-side-link-text: var(--slate-475);
+    --preview-breadcrumb-text: var(--slate-475);
+    --preview-article-p-text: var(--slate-475);
+    --preview-side-caption-text: var(--slate-350);
+    --preview-side-link-is-current-bg: var(--gray-175);
+    --preview-side-link-is-current-text: var(--violet-625);
+    --preview-note-bg: var(--gray-75);
+    --preview-note-text: var(--teal-500);
+    --preview-next-strong-text: var(--slate-625);
+    --start-inner-p-text: var(--slate-475);
+    --install-label-text: var(--slate-475);
+    --install-card-border: var(--gray-200);
+    --install-card-bg: var(--white);
+    --install-card-code-text: var(--slate-675);
+    --install-card-a-text: var(--violet-575);
+    --terminal-prompt-text: var(--teal-400);
+    --home-footer-border: var(--gray-200);
+    --home-footer-text: var(--slate-400);
+    --approach-card-featured-bg: radial-gradient(ellipse at 77% 54%, color-mix(in srgb, var(--violet-450) 8%, transparent), transparent 56%),
+        var(--color-bg-card);
+    --card-ribbon-art-opacity: 0.38;
+    --explore-card-hover-card-ribbon-art-opacity: 0.5;
+    --runtime-section-bg: var(--gray-125);
+    --runtime-visual-bg: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--violet-400) 8%, transparent), transparent 65%),
+        var(--color-bg-card);
+    --runtime-state-card-shadow: 0 12px 28px color-mix(in srgb, var(--slate-725) 9%, transparent);
+    --principles-section-bg: var(--gray-150);
+    --footer-github-text: var(--violet-575);
+    --docs-category-card-bg: color-mix(in srgb, var(--color-bg-card) 96%, transparent);
+    --docs-category-card-shadow: 0 14px 45px color-mix(in srgb, var(--slate-725) 4.5%, transparent);
+    --docs-category-card-featured-bg: radial-gradient(ellipse at 100% 0, color-mix(in srgb, var(--violet-500) 7%, transparent), transparent 58%), var(--color-bg-card);
+    --docs-code-copy-is-copied-text: var(--teal-450);
+}

@@ -1,0 +1,80 @@
+export type WritingStyle = 'declarative' | 'imperative';
+export type ComponentStyle = 'class' | 'function' | 'options';
+export type CodeVariants = Record<WritingStyle, Record<ComponentStyle, string>>;
+
+export const codeExamples: CodeVariants = {
+    declarative: {
+        class: `import { Component, reactive } from '@motifx/core';
+
+class Counter extends Component<HTMLDivElement> {
+  state = reactive({ count: 0 });
+
+  view() {
+    return <button onclick={() => this.state.count++}>
+      Count: {this.state.count}
+    </button>;
+  }
+}`,
+        function: `import { reactive } from '@motifx/core';
+
+function Counter() {
+  const state = reactive({ count: 0 });
+
+  return <button onclick={() => state.count++}>
+    Count: {state.count}
+  </button>;
+}`,
+        options: `import { reactive } from '@motifx/core';
+
+const Counter = () => ({
+  el: 'div',
+  data: reactive({ count: 0 }),
+
+  view() {
+    return <button onclick={() => this.data.count++}>
+      Count: {this.data.count}
+    </button>;
+  },
+});`
+    },
+    imperative: {
+        class: `import { Component } from '@motifx/core';
+
+class Counter extends Component<HTMLDivElement> {
+  initializeComponent() {
+    this.controls.add(
+      <button onclick={() => this.controls.add('Another control')}>
+        Add a control
+      </button>
+    );
+  }
+}`,
+        function: `function Counter() {
+  return <div initializeComponent={(component) => {
+    component.controls.add(
+      <button>Add a control</button>
+    );
+  }} />;
+}`,
+        options: `const Counter = () => ({
+  el: 'div',
+
+  initializeComponent() {
+    this.controls.add(
+      <button>Add a control</button>
+    );
+  },
+});`
+    }
+};
+
+export const writingStyles: { value: WritingStyle; label: string }[] = [
+    { value: 'declarative', label: 'Declarative' },
+    { value: 'imperative', label: 'Imperative' }
+];
+
+export const componentStyles: { value: ComponentStyle; label: string }[] = [
+    { value: 'class', label: 'Class' },
+    { value: 'function', label: 'Function' },
+    { value: 'options', label: 'Options' }
+];
