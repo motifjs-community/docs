@@ -3,20 +3,29 @@ using MotifJs.Docs.Site;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var site = SiteConfig.Load();
 var docsOptions = builder.Configuration.GetSection(DocsOptions.Section).Get<DocsOptions>() ?? new DocsOptions();
-docsOptions.Locales = [.. docsOptions.Locales.Prepend(docsOptions.DefaultLocale).Distinct()];
+docsOptions.DefaultLocale = site.DefaultLocale;
+docsOptions.Locales = [.. site.Locales.Select(l => l.Code).Prepend(site.DefaultLocale).Distinct()];
 string FromContentRoot(string path) => Path.GetFullPath(path, builder.Environment.ContentRootPath);
 var docsDatabase = new DocsDatabase(FromContentRoot(docsOptions.DatabasePath));
 
-// `dotnet run -- sync` updates the database from the markdown files and exits.
+// `dotnet run -- sync` rebuilds the database from the markdown files and exits.
 if (args.FirstOrDefault() == "sync")
 {
     var sync = new DocsSync(docsOptions, FromContentRoot(docsOptions.ContentPath), docsDatabase, Console.Out);
     return sync.Run();
 }
 
-using (var connection = docsDatabase.Open()) DocsDatabase.EnsureSchema(connection);
+var hadDatabase = File.Exists(docsDatabase.Path);
+using (var connection = docsDatabase.Open())
+{
+    if (!hadDatabase) DocsDatabase.EnsureSchema(connection);
+    else if (DocsDatabase.ReadSchemaVersion(connection) != DocsDatabase.SchemaVersion)
+        Console.Error.WriteLine($"warning: {docsDatabase.Path} was built by an older version; run `npm run docs:sync`.");
+}
 
+builder.Services.AddSingleton(site);
 builder.Services.AddSingleton(docsOptions);
 builder.Services.AddSingleton(docsDatabase);
 builder.Services.AddSingleton<DocsStore>();

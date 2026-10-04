@@ -1,5 +1,6 @@
 import { useNavigation } from '@motifx/core';
 import { localePath, stripLocale, t } from '../i18n';
+import site from 'virtual:site-config';
 import { BrandMark, BrandWordmark } from '../components/Brand';
 
 export default function SiteFooter() {
@@ -14,7 +15,7 @@ export default function SiteFooter() {
                         <BrandWordmark />
                     </a>
                     <p>{() => t('footer.description')}</p>
-                    <a class="footer-github" href="https://github.com/motifjsdev/motifjs" target="_blank" rel="noreferrer">{() => t('footer.openSource')} <span aria-hidden="true">↗</span></a>
+                    <a class="footer-github" href={site.links.repository} target="_blank" rel="noreferrer">{() => t('footer.openSource')} <span aria-hidden="true">↗</span></a>
                 </div>
                 <div class="footer-column">
                     <h3>{() => t('footer.explore')}</h3>
@@ -32,8 +33,8 @@ export default function SiteFooter() {
                 </div>
                 <div class="footer-column">
                     <h3>{() => t('footer.community')}</h3>
-                    <a href="https://github.com/motifjsdev/motifjs" target="_blank" rel="noreferrer">{() => t('footer.repository')} <span aria-hidden="true">↗</span></a>
-                    <a href="https://github.com/motifjsdev/motifjs/issues" target="_blank" rel="noreferrer">{() => t('footer.discussions')} <span aria-hidden="true">↗</span></a>
+                    <a href={site.links.repository} target="_blank" rel="noreferrer">{() => t('footer.repository')} <span aria-hidden="true">↗</span></a>
+                    <a href={site.links.issues} target="_blank" rel="noreferrer">{() => t('footer.discussions')} <span aria-hidden="true">↗</span></a>
                     <a href="https://www.npmjs.com/package/@motifx/core" target="_blank" rel="noreferrer">{() => t('footer.npm')} <span aria-hidden="true">↗</span></a>
                 </div>
             </div>

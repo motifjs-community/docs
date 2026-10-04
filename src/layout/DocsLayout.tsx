@@ -1,5 +1,5 @@
 import { reactive, RouterView, useNavigation, type Component } from '@motifx/core';
-import { defaultDocSlug, prefetchPage } from '../content/docs/api';
+import { prefetchPage } from '../content/docs/api';
 import { docsState, showNav, showPage } from '../content/docs/state';
 import { writingStyles, componentStyles } from '../content/docs/code-examples';
 import { codeStyle, setComponentStyle, setWritingStyle } from '../preferences/code-style';
@@ -56,7 +56,7 @@ export default function DocsLayout() {
     const sidebar = reactive({ mobileOpen: false });
     const toc = reactive({ activeId: '' });
 
-    const currentSlug = () => navigation.params.slug ?? defaultDocSlug;
+    const currentSlug = (): string => navigation.params.slug ?? '';
     const shownPage = () => docsState.status === 'ready' ? docsState.page : null;
 
     // Only the group holding the current page starts open; the reader can still open others.
@@ -141,6 +141,16 @@ export default function DocsLayout() {
             const page = shownPage();
             if (page) setPageTitle(page.title);
             scheduleUpdate();
+        });
+        // An old address: a moved page takes its new one, a removed page leads to the docs home.
+        // Replacing the history entry keeps Back from returning to the old address.
+        layout.bindings.watch(() => {
+            const slug = currentSlug();
+            if (docsState.requestedSlug !== slug) return; // still showing the previous page
+            const target = docsState.status === 'moved' ? '/docs'
+                : docsState.status === 'ready' && docsState.page && docsState.page.slug !== slug ? `/docs/${docsState.page.slug}`
+                : null;
+            if (target) queueMicrotask(() => navigation.navigate(localePath(target) + location.hash, { replace: true }));
         });
     };
 

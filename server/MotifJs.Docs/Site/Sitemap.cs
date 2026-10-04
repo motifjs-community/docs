@@ -41,10 +41,11 @@ public static class Sitemap
     private static IEnumerable<XElement> Entries(string baseUrl, SiteLinks links, string route, IReadOnlyDictionary<string, DateTimeOffset?> updatedByLocale)
     {
         var locales = links.Locales.Where(updatedByLocale.ContainsKey).ToList();
-        var alternates = locales
-            .Select(l => new XElement(Xhtml + "link", new XAttribute("rel", "alternate"), new XAttribute("hreflang", l), new XAttribute("href", baseUrl + links.Localize(route, l))))
-            .Append(new XElement(Xhtml + "link", new XAttribute("rel", "alternate"), new XAttribute("hreflang", "x-default"), new XAttribute("href", baseUrl + links.Localize(route, links.DefaultLocale))))
-            .ToList();
+        XElement Link(string hreflang, string locale) =>
+            new(Xhtml + "link", new XAttribute("rel", "alternate"), new XAttribute("hreflang", hreflang), new XAttribute("href", baseUrl + links.Localize(route, locale)));
+
+        var alternates = locales.Select(l => Link(l, l)).ToList();
+        if (locales.Contains(links.DefaultLocale)) alternates.Add(Link("x-default", links.DefaultLocale));
 
         foreach (var locale in locales)
         {

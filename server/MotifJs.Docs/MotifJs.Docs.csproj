@@ -12,6 +12,11 @@
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 
+  <!-- The site settings live in the repository root and are shared with the Vite build. -->
+  <ItemGroup>
+    <None Include="..\..\site.config.json" Link="site.config.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <!-- The synced docs database ships with the site; `npm run release` builds both first. -->
   <ItemGroup>
     <None Include="App_Data\docs.db" CopyToPublishDirectory="PreserveNewest" Condition="Exists('App_Data\docs.db')" />

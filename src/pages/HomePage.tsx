@@ -1,4 +1,5 @@
 import { t } from '../i18n';
+import site from 'virtual:site-config';
 import { BrandMark } from '../components/Brand';
 import { codeExamples, writingStyles, componentStyles } from '../content/docs/code-examples';
 import { HighlightedCode } from '../components/HighlightedCode';
@@ -99,7 +100,7 @@ export default function HomePage() {
 
                         <div class="hero-actions">
                             <a class="button button-primary" href="#get-started">{() => t('home.hero.getStarted')} <span aria-hidden="true">↗</span></a>
-                            <a class="button button-quiet" href="https://github.com/motifjsdev/motifjs" target="_blank" rel="noreferrer">{() => t('home.hero.exploreGithub')} <span aria-hidden="true">↗</span></a>
+                            <a class="button button-quiet" href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.hero.exploreGithub')} <span aria-hidden="true">↗</span></a>
                         </div>
 
                     </div>
@@ -363,8 +364,8 @@ export default function HomePage() {
                         <p>{() => t('home.community.description')}</p>
                     </div>
                     <div class="community-actions">
-                        <a class="button button-primary" href="https://github.com/motifjsdev/motifjs" target="_blank" rel="noreferrer">{() => t('home.community.repository')} <span aria-hidden="true">↗</span></a>
-                        <a class="button button-quiet" href="https://github.com/motifjsdev/motifjs/issues" target="_blank" rel="noreferrer">{() => t('home.community.discussions')} <span aria-hidden="true">↗</span></a>
+                        <a class="button button-primary" href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.community.repository')} <span aria-hidden="true">↗</span></a>
+                        <a class="button button-quiet" href={site.links.issues} target="_blank" rel="noreferrer">{() => t('home.community.discussions')} <span aria-hidden="true">↗</span></a>
                     </div>
                     <div class="community-mark" aria-hidden="true"><BrandMark /><i></i><i></i><i></i></div>
                 </div>
@@ -382,7 +383,7 @@ export default function HomePage() {
                         <span class="install-label">{() => t('home.start.install')}</span>
                         <code><span class="terminal-prompt">$</span> npm install @motifx/core @motifx/compiler</code>
                         <div class="install-links">
-                            <a href="https://github.com/motifjsdev/motifjs" target="_blank" rel="noreferrer">{() => t('home.start.project')} <span aria-hidden="true">↗</span></a>
+                            <a href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.start.project')} <span aria-hidden="true">↗</span></a>
                             <a href="#examples">{() => t('home.start.viewExample')} <span aria-hidden="true">→</span></a>
                         </div>
                     </div>

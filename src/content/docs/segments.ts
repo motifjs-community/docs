@@ -27,6 +27,7 @@ export function articleSegments(page: DocPage | null, readerLocale: LocaleCode):
     const template = document.createElement('template');
     template.innerHTML = page.html;
     localizeLinks(template.content, readerLocale);
+    wrapTables(template.content);
 
     const segments: ArticleSegment[] = [];
     let prose = '';
@@ -67,8 +68,26 @@ function localizeLinks(root: DocumentFragment, locale: LocaleCode): void {
     }
 }
 
+/**
+ * A table wider than the article scrolls inside its own box instead of running under the side columns.
+ * Runs like `a`/`b`/`c` have no space to wrap at, so the slashes between the names get a break opportunity.
+ */
+function wrapTables(root: DocumentFragment): void {
+    for (const table of Array.from(root.querySelectorAll('table'))) {
+        const walker = document.createTreeWalker(table, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (node.parentElement?.closest('code') === null) node.textContent = node.textContent!.replace(/\//g, '/​');
+        }
+
+        const box = document.createElement('div');
+        box.className = 'docs-table';
+        table.replaceWith(box);
+        box.append(table);
+    }
+}
+
 /** The example that fits a code style: exact match first, then component style, then writing style. */
 export function pickVariant(variants: CodeVariant[], writingStyle: string, componentStyle: string): string {
-    const find = (variant: string) => variants.find((v) => v.variant === variant);
+    const find = (variant: string) => variants.find((v) => v.variant?.split(',').includes(variant));
     return (find(`${writingStyle}/${componentStyle}`) ?? find(componentStyle) ?? find(writingStyle) ?? variants[0])?.code ?? '';
 }

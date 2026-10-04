@@ -15,15 +15,24 @@ namespace MotifJs.Docs.Docs;
 
 public sealed class DocFrontMatter
 {
+    /// <summary>The page address (/docs/{slug}); translations share it. Defaults to the file name.</summary>
+    public string? Slug { get; set; }
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
     public string Category { get; set; } = "";
     public int Order { get; set; }
+    /// <summary>Old addresses that should lead to this page from now on.</summary>
+    public List<string> RedirectFrom { get; set; } = [];
 }
 
 public sealed record DocHeading(string Id, string Text, int Level);
 
-public sealed record RenderedDoc(DocFrontMatter Meta, string Html, IReadOnlyList<DocHeading> Headings);
+/// <summary>A link to another docs file, already rewritten to its address; kept to check the anchor later.</summary>
+public sealed record DocLinkRef(string Slug, string? Anchor, int Line, string Written);
+
+public sealed record ParsedDoc(string File, DocFrontMatter Meta, MarkdownDocument Document);
+
+public sealed record RenderedDoc(DocFrontMatter Meta, string Html, IReadOnlyList<DocHeading> Headings, IReadOnlyList<DocLinkRef> Links);
 
 /// <summary>A content problem, reported with the file and line so it can be fixed at the source.</summary>
 public sealed class DocContentException(string file, int line, string message)
@@ -34,8 +43,11 @@ public sealed class DocContentException(string file, int line, string message)
 }
 
 /// <summary>
-/// Turns a docs markdown file into HTML. Consecutive code fences with the same <c>file=</c> become one
-/// example group; their <c>variant=</c> values let the site show the one that matches the reader's code style.
+/// Turns a docs markdown file into HTML in two steps: <see cref="Parse"/> reads it (front matter included),
+/// <see cref="Render"/> writes HTML once every file's address is known. Links between markdown files
+/// (<c>[x](./other.md#part)</c>) work in an editor as they are and become site links (<c>/docs/slug#part</c>).
+/// Consecutive code fences with the same <c>file=</c> become one example group; their <c>variant=</c> values let
+/// the site show the one that matches the reader's code style.
 /// </summary>
 public static class DocMarkdown
 {
@@ -55,10 +67,17 @@ public static class DocMarkdown
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .Build();
 
-    public static RenderedDoc Render(string markdown, string file)
+    public static ParsedDoc Parse(string markdown, string file)
     {
         var document = Markdown.Parse(markdown, Pipeline);
-        var meta = ReadFrontMatter(document, file);
+        return new ParsedDoc(file, ReadFrontMatter(document, file), document);
+    }
+
+    /// <param name="resolveFile">Maps a linked markdown path, as written, to that page's slug; null when no such file exists.</param>
+    public static RenderedDoc Render(ParsedDoc parsed, Func<string, string?> resolveFile)
+    {
+        var (file, meta, document) = parsed;
+        var links = RewriteFileLinks(document, file, resolveFile);
 
         using var writer = new StringWriter();
         var renderer = new HtmlRenderer(writer);
@@ -103,7 +122,32 @@ public static class DocMarkdown
         }
 
         writer.Flush();
-        return new RenderedDoc(meta, writer.ToString(), headings);
+        return new RenderedDoc(meta, writer.ToString(), headings, links);
+    }
+
+    /// <summary>Points links to other markdown files at their site address; anything else is left alone.</summary>
+    private static List<DocLinkRef> RewriteFileLinks(MarkdownDocument document, string file, Func<string, string?> resolveFile)
+    {
+        var links = new List<DocLinkRef>();
+
+        foreach (var link in document.Descendants<LinkInline>())
+        {
+            if (link.IsImage || link.Url is not { Length: > 0 } url) continue;
+            if (url.StartsWith('#') || url.StartsWith('/') || Regex.IsMatch(url, "^[a-zA-Z][a-zA-Z0-9+.-]*:")) continue; // anchors, site paths, http:, mailto:
+
+            var hash = url.IndexOf('#');
+            var path = Uri.UnescapeDataString(hash < 0 ? url : url[..hash]);
+            var anchor = hash < 0 ? null : url[(hash + 1)..];
+            if (!path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)) continue;
+
+            var slug = resolveFile(path)
+                ?? throw new DocContentException(file, link.Line + 1, $"link '{url}' points to a file that does not exist");
+
+            link.Url = anchor is null ? $"/docs/{slug}" : $"/docs/{slug}#{anchor}";
+            links.Add(new DocLinkRef(slug, string.IsNullOrEmpty(anchor) ? null : anchor, link.Line + 1, url));
+        }
+
+        return links;
     }
 
     private static DocFrontMatter ReadFrontMatter(MarkdownDocument document, string file)
@@ -132,7 +176,7 @@ public static class DocMarkdown
         var message = error.InnerException?.Message ?? error.Message;
 
         if (Regex.Match(message, "Property '(.+?)' not found") is { Success: true } unknown)
-            return $"unknown field '{unknown.Groups[1].Value}' (use title, description, category, order)";
+            return $"unknown field '{unknown.Groups[1].Value}' (use slug, title, description, category, order, redirectFrom)";
         if (message.Contains("deserialize the node", StringComparison.Ordinal) || error.InnerException is FormatException)
             return "a value has the wrong type (title, description and category are text, order is a number)";
 
@@ -150,7 +194,7 @@ public static class DocMarkdown
             if (variants.Count != group.Count)
                 throw new DocContentException(file, first.Block.Line + 1, $"every block of {first.Fence.File} needs a variant once one of them has it");
 
-            var duplicate = variants.GroupBy(g => g.Fence.Variant).FirstOrDefault(g => g.Count() > 1);
+            var duplicate = variants.SelectMany(g => g.Fence.Variants.Select(v => (Variant: v, g.Block))).GroupBy(g => g.Variant).FirstOrDefault(g => g.Count() > 1);
             if (duplicate is not null)
                 throw new DocContentException(file, duplicate.Last().Block.Line + 1, $"variant {duplicate.Key} appears twice for {first.Fence.File}");
 
@@ -207,16 +251,19 @@ public static class DocMarkdown
                 }
             }
 
-            if (variant is not null && !IsVariant(variant))
-                throw new DocContentException(file, block.Line + 1, $"variant '{variant}' is not one of declarative|imperative, class|function|options or writing/component");
+            if (variant?.Split(',').FirstOrDefault(v => !IsVariant(v)) is { } wrong)
+                throw new DocContentException(file, block.Line + 1, $"variant '{wrong}' is not one of declarative|imperative, class|function|options or writing/component");
             if (variant is not null && name is null)
                 throw new DocContentException(file, block.Line + 1, "a block with a variant needs file= so its siblings can be grouped");
 
             return new CodeFence(string.IsNullOrEmpty(block.Info) ? null : block.Info, name, variant);
         }
 
+        /// <summary>One block can stand for several styles: <c>variant=function,options</c>.</summary>
+        public string[] Variants => Variant?.Split(',') ?? [];
+
         public bool Matches(string writing, string component) =>
-            Variant == $"{writing}/{component}" || Variant == writing || Variant == component;
+            Variants.Any(v => v == $"{writing}/{component}" || v == writing || v == component);
 
         private static bool IsVariant(string value) => value.Split('/') switch
         {

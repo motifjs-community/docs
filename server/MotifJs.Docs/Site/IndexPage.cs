@@ -12,9 +12,8 @@ namespace MotifJs.Docs.Site;
 /// browser only, so for crawlers and link previews the shell gets the page's language, title, meta tags and,
 /// on docs pages, the article as plain HTML. The browser hides that copy and the app renders as usual.
 /// </summary>
-public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore store, SiteLinks links)
+public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore store, SiteLinks links, SiteConfig site)
 {
-    private const string SiteName = "MotifJS";
     // Escape only what HTML needs, so Turkish text stays readable in the page source.
     private static readonly HtmlEncoder Html = HtmlEncoder.Create(UnicodeRanges.All);
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
@@ -53,7 +52,16 @@ public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore
 
         if (DocsPath().Match(route) is { Success: true } match)
         {
-            doc = store.GetPage(match.Groups["slug"].Value, locale);
+            var slug = match.Groups["slug"].Value;
+            doc = store.GetPage(slug, locale);
+
+            // An address that lost its page answers with a permanent redirect, so old links and
+            // search results keep working and crawlers update to the new address.
+            if (doc is null && store.FindRedirect(slug, locale) is (true, var to))
+            {
+                context.Response.Redirect(links.Localize(to is null ? "/docs" : $"/docs/{to}", locale) + context.Request.QueryString, permanent: true);
+                return;
+            }
             notFound = doc is null;
         }
 
@@ -69,15 +77,14 @@ public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore
 
         if (doc is not null)
         {
-            html = TitleTag().Replace(html, $"<title>{Html.Encode(doc.Title)} — {SiteName}</title>", 1);
+            html = TitleTag().Replace(html, $"<title>{Html.Encode(doc.Title)} — {Html.Encode(site.Name)}</title>", 1);
             html = DescriptionTag().Replace(html, $"<meta name=\"description\" content=\"{Html.Encode(doc.Description)}\">", 1);
         }
 
         var siteUrl = links.BaseUrl(context);
         string UrlFor(string forLocale) => siteUrl + links.Localize(route, forLocale);
 
-        // A page without a translation is shown in the default language; it points search engines at
-        // that original instead of competing with it, and only real translations are listed as alternates.
+        // A docs page lists only the languages that have it; x-default too, only when the default language does.
         var alternates = doc is null ? links.Locales : store.TranslationsOf(doc.Slug);
         var canonicalLocale = doc?.Locale ?? locale;
 
@@ -95,8 +102,9 @@ public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore
             head.AppendLine($"    <link rel=\"canonical\" href=\"{Html.Encode(UrlFor(canonicalLocale))}\">");
             foreach (var alternate in alternates)
                 head.AppendLine($"    <link rel=\"alternate\" hreflang=\"{alternate}\" href=\"{Html.Encode(UrlFor(alternate))}\">");
-            head.AppendLine($"    <link rel=\"alternate\" hreflang=\"x-default\" href=\"{Html.Encode(UrlFor(links.DefaultLocale))}\">");
-            head.AppendLine($"    <meta property=\"og:site_name\" content=\"{SiteName}\">");
+            if (alternates.Contains(links.DefaultLocale))
+                head.AppendLine($"    <link rel=\"alternate\" hreflang=\"x-default\" href=\"{Html.Encode(UrlFor(links.DefaultLocale))}\">");
+            head.AppendLine($"    <meta property=\"og:site_name\" content=\"{Html.Encode(site.Name)}\">");
             head.AppendLine($"    <meta property=\"og:url\" content=\"{Html.Encode(UrlFor(canonicalLocale))}\">");
             head.AppendLine($"    <meta property=\"og:type\" content=\"{(doc is null ? "website" : "article")}\">");
         }

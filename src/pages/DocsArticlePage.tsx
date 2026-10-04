@@ -1,6 +1,6 @@
 import { localePath, localeState, t } from '../i18n';
-import { defaultDocSlug, type DocLink } from '../content/docs/api';
-import { docsState } from '../content/docs/state';
+import type { DocLink } from '../content/docs/api';
+import { docsState, firstDocSlug } from '../content/docs/state';
 import { articleSegments, pickVariant, type ArticleSegment } from '../content/docs/segments';
 import { codeStyle } from '../preferences/code-style';
 import { CodeBlock } from '../components/CodeBlock';
@@ -38,7 +38,7 @@ export default function DocsArticlePage() {
                 {() => articleSegments(visiblePage(), localeState.current).map((segment) => <Segment key={segment.key} segment={segment} />)}
             </div>
 
-            <a class="docs-start-link" href={() => localePath(`/docs/${defaultDocSlug}`)} rel="router" x-display={() => docsState.status === 'missing'}>
+            <a class="docs-start-link" href={() => localePath(firstDocSlug() ? `/docs/${firstDocSlug()}` : '/docs')} rel="router" x-display={() => docsState.status === 'missing'}>
                 {() => t('docs.home.startHere')} <span aria-hidden="true">→</span>
             </a>
 

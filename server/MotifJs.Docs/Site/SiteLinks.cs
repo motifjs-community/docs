@@ -7,7 +7,7 @@ namespace MotifJs.Docs.Site;
 /// Addresses of the site: the default locale lives at the root, every other locale under its own
 /// prefix (/tr/docs/routing). Shared by the app shell and the sitemap so both agree.
 /// </summary>
-public sealed partial class SiteLinks(DocsOptions options, IConfiguration configuration)
+public sealed partial class SiteLinks(DocsOptions options, IConfiguration configuration, SiteConfig site)
 {
     [GeneratedRegex("(<a\\s[^>]*?href=\")(/(?!/)[^\"]*)\"")]
     private static partial Regex SiteLinkInHtml();
@@ -15,9 +15,9 @@ public sealed partial class SiteLinks(DocsOptions options, IConfiguration config
     public string DefaultLocale => options.DefaultLocale;
     public IReadOnlyList<string> Locales => options.Locales;
 
-    /// <summary>Absolute base, from Site:Url when set (behind a proxy), otherwise from the request.</summary>
+    /// <summary>Absolute base: Site:Url from appsettings or the environment, else "url" in site.config.json, else the request.</summary>
     public string BaseUrl(HttpContext context) =>
-        (configuration["Site:Url"] ?? $"{context.Request.Scheme}://{context.Request.Host}").TrimEnd('/');
+        (configuration["Site:Url"] ?? (string.IsNullOrWhiteSpace(site.Url) ? null : site.Url) ?? $"{context.Request.Scheme}://{context.Request.Host}").TrimEnd('/');
 
     /// <summary>"/tr/docs/routing" → ("tr", "/docs/routing"); unprefixed paths are the default locale.</summary>
     public (string Locale, string Route) Split(string path)

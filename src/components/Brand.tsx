@@ -1,18 +1,16 @@
+import site from 'virtual:site-config';
+
 /**
- * MotifJS brand, drawn from the brand kit (motifjs-logo.svg). The mark is inline SVG so its colour
- * comes from tokens and follows the theme; the wordmark is text in the kit's typography.
+ * The site's logo from site.config.json (logo.mark). The mark is inlined so a logo drawn without its
+ * own fill takes its colour from the theme tokens; the wordmark is text in the brand typography.
  */
 export function BrandMark() {
     return (
-        <svg class="brand-mark" viewBox="0 0 236 236" aria-hidden="true" focusable="false">
-            <path d="M118 0 170 52 142 80 118 56 94 80 66 52Z" />
-            <path d="m236 118-52 52-28-28 24-24-24-24 28-28Z" />
-            <path d="m118 236-52-52 28-28 24 24 24-24 28 28Z" />
-            <path d="M0 118 52 66l28 28-24 24 24 24-28 28Z" />
-        </svg>
+        <svg class="brand-mark" viewBox={site.logo.viewBox} aria-hidden="true" focusable="false"
+            onbuilt={(c) => (c.element as SVGElement).innerHTML = site.logo.markup} />
     );
 }
 
 export function BrandWordmark() {
-    return <span class="brand-name">motif<span>js</span></span>;
+    return <span class="brand-name">{site.logo.wordmark}<span>{site.logo.wordmarkAccent ?? ''}</span></span>;
 }

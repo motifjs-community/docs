@@ -1,22 +1,23 @@
 import { reactive } from '@motifx/core';
-import en from '../content/locales/en.json';
-import tr from '../content/locales/tr.json';
+import site from 'virtual:site-config';
 
-export const supportedLocales = [
-    { code: 'en', label: 'English' },
-    { code: 'tr', label: 'Türkçe' }
-] as const;
+/** The languages of site.config.json; each has its texts in content/locales/{code}.json. */
+export const supportedLocales = site.locales;
 
-export type LocaleCode = typeof supportedLocales[number]['code'];
-export type MessageKey = keyof typeof en;
+export type LocaleCode = string;
+/** en.json is the reference: every key the app uses is there. */
+export type MessageKey = keyof typeof import('../content/locales/en.json');
 
-/** English lives at the site root; every other locale under its own prefix (/tr/docs/...). */
-export const defaultLocale: LocaleCode = 'en';
+/** The default locale lives at the site root; every other locale under its own prefix (/tr/docs/...). */
+export const defaultLocale: LocaleCode = site.defaultLocale;
 
 const storageKey = 'motifjs-locale';
-const catalogs: Record<LocaleCode, Record<MessageKey, string>> = { en, tr };
+const catalogs: Record<LocaleCode, Partial<Record<MessageKey, string>>> = Object.fromEntries(
+    Object.entries(import.meta.glob<Record<MessageKey, string>>('../content/locales/*.json', { eager: true, import: 'default' }))
+        .map(([file, messages]) => [file.slice(file.lastIndexOf('/') + 1, -'.json'.length), messages])
+);
 
-/** The locale an address belongs to: "/tr" and "/tr/..." are Turkish, everything else English. */
+/** The locale an address belongs to: "/tr" and "/tr/..." are that locale, everything else the default. */
 export function localeOfPath(path: string): LocaleCode {
     const prefix = path.split('/')[1];
     return supportedLocales.find(({ code }) => code === prefix && code !== defaultLocale)?.code ?? defaultLocale;
@@ -53,13 +54,14 @@ export function preferredLocale(): LocaleCode {
 
 export const localeState = reactive({ current: localeOfPath(location.pathname) });
 
+/** A text in the current language; one a translation lacks comes from the default language. */
 export function t(key: MessageKey): string {
-    return catalogs[localeState.current][key];
+    return catalogs[localeState.current]?.[key] ?? catalogs[defaultLocale]?.[key] ?? key;
 }
 
 /** Sets the tab title; pages without their own title get the site title. */
 export function setPageTitle(title?: string): void {
-    document.title = title ? `${title} — MotifJS` : t('meta.title');
+    document.title = title ? `${title} — ${site.name}` : t('meta.title');
 }
 
 function syncDocumentLocale(): void {

@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import compiler from '@motifx/compiler';
+import siteConfig from './vite.site.mjs';
 
 export default defineConfig({
-    plugins: [compiler()],
+    plugins: [compiler(), siteConfig()],
     resolve: {
         extensions: ['.tsx', '.ts', '.jsx', '.js'],
         dedupe: ['@motifx/core', 'marked', 'dompurify'],

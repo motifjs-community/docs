@@ -1,6 +1,6 @@
 import { localePath, localeState, t } from '../i18n';
-import { defaultDocSlug, prefetchPage } from '../content/docs/api';
-import { docsState, showNav } from '../content/docs/state';
+import { prefetchPage } from '../content/docs/api';
+import { docsState, firstDocSlug, showNav } from '../content/docs/state';
 
 const categoryIcons: Record<string, string> = {
     start: 'M5.5 3.6v8.8L12.4 8 5.5 3.6Z',
@@ -18,7 +18,7 @@ export default function DocsHomePage() {
                     <span class="docs-eyebrow"><i></i>{() => t('docs.home.eyebrow')}</span>
                     <h1>{() => t('docs.home.title')}</h1>
                     <p>{() => t('docs.home.description')}</p>
-                    <a class="docs-start-link" href={() => localePath(`/docs/${defaultDocSlug}`)} rel="router">
+                    <a class="docs-start-link" href={() => localePath(firstDocSlug() ? `/docs/${firstDocSlug()}` : '/docs')} rel="router">
                         {() => t('docs.home.startHere')} <span aria-hidden="true">→</span>
                     </a>
                 </div>

@@ -18,7 +18,16 @@ public static class DocsApi
         {
             locale = store.Normalize(locale);
             if (NotModified(context, store, locale, slug) is { } notModified) return notModified;
-            return store.GetPage(slug, locale) is { } page ? Results.Ok(page) : Results.NotFound();
+            if (store.GetPage(slug, locale) is { } page) return Results.Ok(page);
+
+            // A page that moved answers with its new address (fetch follows it and the app updates the URL);
+            // one removed without a successor tells the app to show the docs home.
+            return store.FindRedirect(slug, locale) switch
+            {
+                (true, string to) => Results.Redirect($"/api/docs/pages/{Uri.EscapeDataString(to)}?locale={locale}", permanent: true),
+                (true, null) => Results.Json(new { movedToHome = true }, statusCode: StatusCodes.Status404NotFound),
+                _ => Results.NotFound()
+            };
         });
     }
 

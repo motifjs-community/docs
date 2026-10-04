@@ -1,7 +1,9 @@
 import { reactive, RouterView, useNavigation, type Component } from "@motifx/core";
 import { localePath, localeState, rememberLocale, stripLocale, supportedLocales, t, type LocaleCode } from '../i18n';
 import SiteFooter from './SiteFooter';
+import site from 'virtual:site-config';
 import { BrandMark, BrandWordmark } from '../components/Brand';
+import { routeInLocale } from '../content/docs/state';
 
 export default function MainLayout() {
     const navigation = useNavigation();
@@ -11,12 +13,15 @@ export default function MainLayout() {
     });
     document.documentElement.setAttribute('data-theme', theme.mode);
 
-    // The language is part of the address: switching it opens the same page under the other prefix.
-    const switchLocale = (locale: LocaleCode) => {
+    // The language is part of the address: switching it opens the same page under the other prefix,
+    // or that language's docs home when it has no such page.
+    const switchLocale = async (locale: LocaleCode) => {
         languageMenu.open = false;
         rememberLocale(locale);
         if (locale === localeState.current) return;
-        navigation.navigate(localePath(stripLocale(location.pathname), locale) + location.search + location.hash);
+        const route = stripLocale(location.pathname);
+        const target = await routeInLocale(route, locale);
+        navigation.navigate(localePath(target, locale) + (target === route ? location.search + location.hash : ''));
     };
 
     // The header is fixed: it turns solid once the page moves, and on small screens it slides away
@@ -72,7 +77,7 @@ export default function MainLayout() {
                         <a class="nav-link" rel="router" href={() => localePath('/#why-motifjs')}>{() => t('header.why')}</a>
                         <a class="nav-link" rel="router" href={() => localePath('/#examples')}>{() => t('header.examples')}</a>
                         <a class="nav-link" href={() => localePath('/docs')} rel="router">{() => t('header.docs')}</a>
-                        <a class="nav-link nav-github" href="https://github.com/motifjsdev/motifjs" target="_blank" rel="noreferrer">
+                        <a class="nav-link nav-github" href={site.links.repository} target="_blank" rel="noreferrer">
                             {() => t('header.github')} <span aria-hidden="true">↗</span>
                         </a>
                     </nav>

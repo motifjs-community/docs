@@ -21,8 +21,8 @@ public sealed record DocPageResult(
     DateTimeOffset UpdatedAt);
 
 /// <summary>
-/// Reads docs for one locale. A page missing in that locale is served in the default locale, and the
-/// default locale decides which pages exist and in what order.
+/// Reads docs for one locale. Every language has its own pages; pages that share a slug are the same page
+/// in different languages.
 /// </summary>
 public sealed class DocsStore(DocsDatabase database, DocsOptions options)
 {
@@ -77,7 +77,22 @@ public sealed class DocsStore(DocsDatabase database, DocsOptions options)
             row.UpdatedAt);
     }
 
-    /// <summary>Locales that have their own text for a page, default locale first.</summary>
+    /// <summary>
+    /// Where an address that no longer has a page leads: <c>Found</c> is false when it never redirected,
+    /// <c>To</c> is null when it leads to the docs home.
+    /// </summary>
+    public (bool Found, string? To) FindRedirect(string slug, string locale)
+    {
+        using var connection = database.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT to_slug FROM redirects WHERE from_slug = $slug AND locale = $locale";
+        command.Parameters.AddWithValue("$slug", slug);
+        command.Parameters.AddWithValue("$locale", locale);
+        using var reader = command.ExecuteReader();
+        return reader.Read() ? (true, reader.IsDBNull(0) ? null : reader.GetString(0)) : (false, null);
+    }
+
+    /// <summary>Locales that have a page with this slug, in configured order.</summary>
     public IReadOnlyList<string> TranslationsOf(string slug)
     {
         using var connection = database.Open();
@@ -91,21 +106,22 @@ public sealed class DocsStore(DocsDatabase database, DocsOptions options)
         return options.Locales.Where(found.Contains).ToList();
     }
 
-    /// <summary>Every page in reading order with the last change of each translation, for the sitemap.</summary>
+    /// <summary>Every slug, in each language's reading order, with the last change of each language that has it; for the sitemap.</summary>
     public IReadOnlyList<(string Slug, IReadOnlyDictionary<string, DateTimeOffset> Updated)> GetSitemap()
     {
         using var connection = database.Open();
-        var order = ReadPageRows(connection, options.DefaultLocale).Select(p => p.Slug).ToList();
-
-        using var command = connection.CreateCommand();
-        command.CommandText = "SELECT slug, locale, updated_at FROM pages";
         var updated = new Dictionary<string, Dictionary<string, DateTimeOffset>>();
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
+        var order = new List<string>();
+
+        foreach (var locale in options.Locales)
+        foreach (var page in ReadPageRows(connection, locale))
         {
-            var slug = reader.GetString(0);
-            if (!updated.TryGetValue(slug, out var byLocale)) updated[slug] = byLocale = [];
-            byLocale[reader.GetString(1)] = DateTimeOffset.Parse(reader.GetString(2));
+            if (!updated.TryGetValue(page.Slug, out var byLocale))
+            {
+                updated[page.Slug] = byLocale = [];
+                order.Add(page.Slug);
+            }
+            byLocale[locale] = page.UpdatedAt;
         }
 
         return order.Select(slug => (slug, (IReadOnlyDictionary<string, DateTimeOffset>)updated[slug])).ToList();
@@ -120,21 +136,18 @@ public sealed class DocsStore(DocsDatabase database, DocsOptions options)
         return (string)command.ExecuteScalar()!;
     }
 
-    /// <summary>Every page of the default locale, in reading order, with the requested translation where there is one.</summary>
-    private List<PageRow> ReadPageRows(SqliteConnection connection, string locale)
+    /// <summary>The pages of one locale in reading order: by category, then by `order`.</summary>
+    private static List<PageRow> ReadPageRows(SqliteConnection connection, string locale)
     {
         using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT d.slug, COALESCE(t.locale, d.locale), d.category, COALESCE(t.title, d.title),
-                   COALESCE(t.description, d.description), d.sort, COALESCE(t.updated_at, d.updated_at)
-            FROM pages d
-            LEFT JOIN pages t ON t.slug = d.slug AND t.locale = $locale
-            LEFT JOIN categories c ON c.id = d.category AND c.locale = d.locale
-            WHERE d.locale = $default
-            ORDER BY c.sort, d.sort, d.slug
+            SELECT p.slug, p.locale, p.category, p.title, p.description, p.sort, p.updated_at
+            FROM pages p
+            LEFT JOIN categories c ON c.id = p.category AND c.locale = p.locale
+            WHERE p.locale = $locale
+            ORDER BY c.sort, p.sort, p.slug
             """;
         command.Parameters.AddWithValue("$locale", locale);
-        command.Parameters.AddWithValue("$default", options.DefaultLocale);
 
         var rows = new List<PageRow>();
         using var reader = command.ExecuteReader();
@@ -144,18 +157,11 @@ public sealed class DocsStore(DocsDatabase database, DocsOptions options)
         return rows;
     }
 
-    private List<CategoryRow> ReadCategories(SqliteConnection connection, string locale)
+    private static List<CategoryRow> ReadCategories(SqliteConnection connection, string locale)
     {
         using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT d.id, COALESCE(t.title, d.title), COALESCE(t.description, d.description)
-            FROM categories d
-            LEFT JOIN categories t ON t.id = d.id AND t.locale = $locale
-            WHERE d.locale = $default
-            ORDER BY d.sort
-            """;
+        command.CommandText = "SELECT id, title, description FROM categories WHERE locale = $locale ORDER BY sort";
         command.Parameters.AddWithValue("$locale", locale);
-        command.Parameters.AddWithValue("$default", options.DefaultLocale);
 
         var categories = new List<CategoryRow>();
         using var reader = command.ExecuteReader();

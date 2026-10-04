@@ -10,9 +10,9 @@ public sealed class DocsOptions
     /// <summary>SQLite file the site reads from. Relative paths start at the content root.</summary>
     public string DatabasePath { get; set; } = "App_Data/docs.db";
 
-    /// <summary>Locale used when a page has no translation. Its pages decide which slugs exist.</summary>
+    /// <summary>Locale of addresses without a language prefix (<c>/docs/x</c>); from site.config.json.</summary>
     public string DefaultLocale { get; set; } = "en";
 
-    /// <summary>Set in appsettings.json. No default here: the config binder would append to it instead of replacing it.</summary>
+    /// <summary>The languages, default first; from site.config.json.</summary>
     public string[] Locales { get; set; } = [];
 }
