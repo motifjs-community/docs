@@ -20,6 +20,7 @@ using (var connection = docsDatabase.Open()) DocsDatabase.EnsureSchema(connectio
 builder.Services.AddSingleton(docsOptions);
 builder.Services.AddSingleton(docsDatabase);
 builder.Services.AddSingleton<DocsStore>();
+builder.Services.AddSingleton<SiteLinks>();
 builder.Services.AddSingleton<IndexPage>();
 
 var app = builder.Build();
@@ -35,6 +36,7 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.MapDocsApi();
+app.MapSitemap();
 app.MapFallback((HttpContext context, IndexPage page) => page.Handle(context));
 
 app.Run();

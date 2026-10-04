@@ -12,7 +12,7 @@ namespace MotifJs.Docs.Site;
 /// browser only, so for crawlers and link previews the shell gets the page's language, title, meta tags and,
 /// on docs pages, the article as plain HTML. The browser hides that copy and the app renders as usual.
 /// </summary>
-public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore store, IConfiguration configuration)
+public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore store, SiteLinks links)
 {
     private const string SiteName = "MotifJS";
     // Escape only what HTML needs, so Turkish text stays readable in the page source.
@@ -47,7 +47,7 @@ public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore
             return;
         }
 
-        var (locale, route) = SplitLocale(path);
+        var (locale, route) = links.Split(path);
         DocPageResult? doc = null;
         var notFound = false;
 
@@ -73,8 +73,13 @@ public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore
             html = DescriptionTag().Replace(html, $"<meta name=\"description\" content=\"{Html.Encode(doc.Description)}\">", 1);
         }
 
-        var siteUrl = (configuration["Site:Url"] ?? $"{context.Request.Scheme}://{context.Request.Host}").TrimEnd('/');
-        string UrlFor(string forLocale) => siteUrl + LocalizedPath(forLocale, route);
+        var siteUrl = links.BaseUrl(context);
+        string UrlFor(string forLocale) => siteUrl + links.Localize(route, forLocale);
+
+        // A page without a translation is shown in the default language; it points search engines at
+        // that original instead of competing with it, and only real translations are listed as alternates.
+        var alternates = doc is null ? links.Locales : store.TranslationsOf(doc.Slug);
+        var canonicalLocale = doc?.Locale ?? locale;
 
         var head = new StringBuilder();
         // Lets the stylesheet hide the crawler copy before the app paints.
@@ -87,12 +92,12 @@ public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore
         }
         else
         {
-            head.AppendLine($"    <link rel=\"canonical\" href=\"{Html.Encode(UrlFor(locale))}\">");
-            foreach (var alternate in store.Locales)
+            head.AppendLine($"    <link rel=\"canonical\" href=\"{Html.Encode(UrlFor(canonicalLocale))}\">");
+            foreach (var alternate in alternates)
                 head.AppendLine($"    <link rel=\"alternate\" hreflang=\"{alternate}\" href=\"{Html.Encode(UrlFor(alternate))}\">");
-            head.AppendLine($"    <link rel=\"alternate\" hreflang=\"x-default\" href=\"{Html.Encode(UrlFor(store.DefaultLocale))}\">");
+            head.AppendLine($"    <link rel=\"alternate\" hreflang=\"x-default\" href=\"{Html.Encode(UrlFor(links.DefaultLocale))}\">");
             head.AppendLine($"    <meta property=\"og:site_name\" content=\"{SiteName}\">");
-            head.AppendLine($"    <meta property=\"og:url\" content=\"{Html.Encode(UrlFor(locale))}\">");
+            head.AppendLine($"    <meta property=\"og:url\" content=\"{Html.Encode(UrlFor(canonicalLocale))}\">");
             head.AppendLine($"    <meta property=\"og:type\" content=\"{(doc is null ? "website" : "article")}\">");
         }
 
@@ -114,7 +119,7 @@ public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore
                         <p>{Html.Encode(doc.Category.Title)}</p>
                         <h1>{Html.Encode(doc.Title)}</h1>
                         <p>{Html.Encode(doc.Description)}</p>
-                {doc.Html}    </article>
+                {links.LocalizeHtml(doc.Html, locale)}    </article>
                     </div>
                 """;
             html = html.Replace("<div id=\"app\">", article.TrimStart() + "\n    <div id=\"app\">");
@@ -122,19 +127,6 @@ public sealed partial class IndexPage(IWebHostEnvironment environment, DocsStore
 
         return html;
     }
-
-    private (string Locale, string Route) SplitLocale(string path)
-    {
-        foreach (var locale in store.Locales.Where(l => l != store.DefaultLocale))
-        {
-            if (path == $"/{locale}" || path == $"/{locale}/") return (locale, "/");
-            if (path.StartsWith($"/{locale}/", StringComparison.Ordinal)) return (locale, path[(locale.Length + 1)..]);
-        }
-        return (store.DefaultLocale, path);
-    }
-
-    private string LocalizedPath(string locale, string route) =>
-        locale == store.DefaultLocale ? route : route == "/" ? $"/{locale}" : $"/{locale}{route}";
 
     /// <summary>index.html from the build; re-read when a new build replaces it.</summary>
     private string? ReadTemplate()

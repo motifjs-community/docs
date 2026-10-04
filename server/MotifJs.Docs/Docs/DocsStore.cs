@@ -77,6 +77,40 @@ public sealed class DocsStore(DocsDatabase database, DocsOptions options)
             row.UpdatedAt);
     }
 
+    /// <summary>Locales that have their own text for a page, default locale first.</summary>
+    public IReadOnlyList<string> TranslationsOf(string slug)
+    {
+        using var connection = database.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT locale FROM pages WHERE slug = $slug";
+        command.Parameters.AddWithValue("$slug", slug);
+
+        var found = new HashSet<string>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read()) found.Add(reader.GetString(0));
+        return options.Locales.Where(found.Contains).ToList();
+    }
+
+    /// <summary>Every page in reading order with the last change of each translation, for the sitemap.</summary>
+    public IReadOnlyList<(string Slug, IReadOnlyDictionary<string, DateTimeOffset> Updated)> GetSitemap()
+    {
+        using var connection = database.Open();
+        var order = ReadPageRows(connection, options.DefaultLocale).Select(p => p.Slug).ToList();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT slug, locale, updated_at FROM pages";
+        var updated = new Dictionary<string, Dictionary<string, DateTimeOffset>>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var slug = reader.GetString(0);
+            if (!updated.TryGetValue(slug, out var byLocale)) updated[slug] = byLocale = [];
+            byLocale[reader.GetString(1)] = DateTimeOffset.Parse(reader.GetString(2));
+        }
+
+        return order.Select(slug => (slug, (IReadOnlyDictionary<string, DateTimeOffset>)updated[slug])).ToList();
+    }
+
     /// <summary>Changes whenever a sync changes anything; good enough for an ETag.</summary>
     public string GetVersion()
     {

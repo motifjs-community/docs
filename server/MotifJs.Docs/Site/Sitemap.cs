@@ -1,0 +1,57 @@
+using System.Text;
+using System.Xml.Linq;
+using MotifJs.Docs.Docs;
+
+namespace MotifJs.Docs.Site;
+
+/// <summary>sitemap.xml and robots.txt, so crawlers find every page in every language without running the app.</summary>
+public static class Sitemap
+{
+    private static readonly XNamespace Ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
+    private static readonly XNamespace Xhtml = "http://www.w3.org/1999/xhtml";
+
+    // App pages that are not docs articles.
+    private static readonly string[] StaticRoutes = ["/", "/docs", "/about"];
+
+    public static void MapSitemap(this IEndpointRouteBuilder app)
+    {
+        app.MapGet("/sitemap.xml", (HttpContext context, DocsStore store, SiteLinks links) =>
+        {
+            var baseUrl = links.BaseUrl(context);
+            var urls = new List<XElement>();
+
+            foreach (var route in StaticRoutes)
+                urls.AddRange(Entries(baseUrl, links, route, links.Locales.ToDictionary(l => l, _ => (DateTimeOffset?)null)));
+
+            foreach (var (slug, updated) in store.GetSitemap())
+                urls.AddRange(Entries(baseUrl, links, $"/docs/{slug}", updated.ToDictionary(u => u.Key, u => (DateTimeOffset?)u.Value)));
+
+            var document = new XDocument(new XDeclaration("1.0", "utf-8", null),
+                new XElement(Ns + "urlset", new XAttribute(XNamespace.Xmlns + "xhtml", Xhtml), urls));
+
+            context.Response.Headers.CacheControl = "public, max-age=3600";
+            return Results.Text(document.Declaration + "\n" + document.Root, "application/xml", Encoding.UTF8);
+        });
+
+        app.MapGet("/robots.txt", (HttpContext context, SiteLinks links) =>
+            Results.Text($"User-agent: *\nAllow: /\n\nSitemap: {links.BaseUrl(context)}/sitemap.xml\n", "text/plain", Encoding.UTF8));
+    }
+
+    /// <summary>One &lt;url&gt; per language the route exists in, each listing all of them as alternates.</summary>
+    private static IEnumerable<XElement> Entries(string baseUrl, SiteLinks links, string route, IReadOnlyDictionary<string, DateTimeOffset?> updatedByLocale)
+    {
+        var locales = links.Locales.Where(updatedByLocale.ContainsKey).ToList();
+        var alternates = locales
+            .Select(l => new XElement(Xhtml + "link", new XAttribute("rel", "alternate"), new XAttribute("hreflang", l), new XAttribute("href", baseUrl + links.Localize(route, l))))
+            .Append(new XElement(Xhtml + "link", new XAttribute("rel", "alternate"), new XAttribute("hreflang", "x-default"), new XAttribute("href", baseUrl + links.Localize(route, links.DefaultLocale))))
+            .ToList();
+
+        foreach (var locale in locales)
+        {
+            yield return new XElement(Ns + "url",
+                new XElement(Ns + "loc", baseUrl + links.Localize(route, locale)),
+                updatedByLocale[locale] is { } updated ? new XElement(Ns + "lastmod", updated.ToString("yyyy-MM-dd")) : null,
+                alternates);
+        }
+    }
+}
