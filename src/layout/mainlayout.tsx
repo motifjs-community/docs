@@ -1,5 +1,5 @@
 import { reactive, RouterView, useNavigation } from "@motifx/core";
-import { localeState, setLocale, supportedLocales, t } from '../i18n';
+import { localePath, localeState, rememberLocale, stripLocale, supportedLocales, t, type LocaleCode } from '../i18n';
 import SiteFooter from './SiteFooter';
 import { BrandMark, BrandWordmark } from '../components/Brand';
 
@@ -11,20 +11,28 @@ export default function MainLayout() {
     });
     document.documentElement.setAttribute('data-theme', theme.mode);
 
+    // The language is part of the address: switching it opens the same page under the other prefix.
+    const switchLocale = (locale: LocaleCode) => {
+        languageMenu.open = false;
+        rememberLocale(locale);
+        if (locale === localeState.current) return;
+        navigation.navigate(localePath(stripLocale(location.pathname), locale) + location.search + location.hash);
+    };
+
     return (
         <>
             {/* Keyed to the address, not to the rendered page, so the width holds while the next page loads. */}
-            <header class={() => navigation.uri.startsWith('/docs/') ? 'site-header is-docs-reader' : 'site-header'}>
+            <header class={() => stripLocale(navigation.uri).startsWith('/docs/') ? 'site-header is-docs-reader' : 'site-header'}>
                 <div class="header-inner">
-                    <a href="/" class="brand" aria-label={() => t('header.home')}>
+                    <a href={() => localePath('/')} class="brand" onclick={() => { navigation.navigate(localePath('/'), { scroll: 'top' }); return false; }} aria-label={() => t('header.home')}>
                         <BrandMark />
                         <BrandWordmark />
                     </a>
 
                     <nav class="primary-nav" aria-label={() => t('header.navLabel')}>
-                        <a class="nav-link" href="/#why-motifjs">{() => t('header.why')}</a>
-                        <a class="nav-link" href="/#examples">{() => t('header.examples')}</a>
-                        <a class="nav-link" href="/docs" rel="router">{() => t('header.docs')}</a>
+                        <a class="nav-link" rel="router" href={() => localePath('/#why-motifjs')}>{() => t('header.why')}</a>
+                        <a class="nav-link" rel="router" href={() => localePath('/#examples')}>{() => t('header.examples')}</a>
+                        <a class="nav-link" href={() => localePath('/docs')} rel="router">{() => t('header.docs')}</a>
                         <a class="nav-link nav-github" href="https://github.com/motifjsdev/motifjs" target="_blank" rel="noreferrer">
                             {() => t('header.github')} <span aria-hidden="true">↗</span>
                         </a>
@@ -51,10 +59,7 @@ export default function MainLayout() {
                                     type="button"
                                     role="menuitemradio"
                                     aria-checked={() => localeState.current === locale.code}
-                                    onclick={() => {
-                                        setLocale(locale.code);
-                                        languageMenu.open = false;
-                                    }}
+                                    onclick={() => switchLocale(locale.code)}
                                 >
                                     <span>{locale.label}</span>
                                     <span class="language-option-code">{locale.code.toUpperCase()}</span>
@@ -77,7 +82,7 @@ export default function MainLayout() {
                         <span aria-hidden="true">{() => theme.mode === 'dark' ? '☼' : '☾'}</span>
                     </button>
 
-                    <a class="header-cta" href="/docs" rel="router">
+                    <a class="header-cta" href={() => localePath('/docs')} rel="router">
                         {() => t('header.readDocs')} <span aria-hidden="true">→</span>
                     </a>
                 </div>

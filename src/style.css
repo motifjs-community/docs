@@ -2914,10 +2914,26 @@ body { font-size: var(--font-size-10); }
 
 .docs-article-lead { max-width: 690px; margin: 18px 0 0; color: var(--color-text-muted); font-size: var(--font-size-12); line-height: var(--line-height-13); }
 .docs-article-rule { height: 1px; margin: 32px 0; background: linear-gradient(90deg, var(--color-border), transparent); }
-.docs-article-sections { display: grid; min-width: 0; gap: 40px; }
-.docs-content-section { min-width: 0; scroll-margin-top: 24px; }
-.docs-content-section h2 { margin: 0 0 12px; color: var(--color-text-primary); font-size: var(--font-size-15); font-weight: var(--font-weight-11); letter-spacing: var(--letter-spacing-7); }
-.docs-content-section p { margin: 0 0 12px; color: var(--color-text-muted); font-size: var(--font-size-9); line-height: var(--line-height-15); }
+/* Article body: markdown rendered by the server, split into prose and code examples. */
+.docs-article-body { min-width: 0; }
+.docs-prose h2 { margin: 40px 0 12px; color: var(--color-text-primary); font-size: var(--font-size-15); font-weight: var(--font-weight-11); letter-spacing: var(--letter-spacing-7); scroll-margin-top: 24px; }
+.docs-prose:first-child > h2:first-child { margin-top: 0; }
+.docs-prose h3 { margin: 28px 0 10px; color: var(--color-text-primary); font-size: var(--font-size-12); font-weight: var(--font-weight-11); scroll-margin-top: 24px; }
+.docs-prose p,
+.docs-prose ul,
+.docs-prose ol { margin: 0 0 12px; color: var(--color-text-muted); font-size: var(--font-size-9); line-height: var(--line-height-15); }
+.docs-prose ul,
+.docs-prose ol { padding-left: 22px; }
+.docs-prose li + li { margin-top: 4px; }
+.docs-prose strong { color: var(--color-text-primary); }
+.docs-prose a { color: var(--color-accent-text); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--color-accent-text) 40%, transparent); text-underline-offset: 3px; }
+.docs-prose a:hover { text-decoration-color: currentColor; }
+.docs-prose code { padding: 1px 5px; border-radius: var(--radius-3); background: var(--color-bg-code); color: var(--color-text-code); font-family: var(--font-mono); font-size: 0.88em; }
+.docs-prose blockquote { margin: 0 0 12px; padding: 2px 0 2px 16px; border-left: 2px solid var(--color-accent); }
+.docs-prose table { width: 100%; margin: 0 0 16px; border-collapse: collapse; font-size: var(--font-size-8); }
+.docs-prose th,
+.docs-prose td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); color: var(--color-text-muted); text-align: left; }
+.docs-prose th { color: var(--color-text-primary); font-weight: var(--font-weight-11); }
 
 /* Code block: file name + copy action only. */
 .docs-code { overflow: hidden; margin: 18px 0 0; border: 1px solid var(--color-border); border-radius: var(--radius-8); background: var(--color-bg-code); }
@@ -2986,6 +3002,7 @@ body { font-size: var(--font-size-10); }
 .docs-toc a { margin-left: -16px; padding: 5px 0 5px 15px; border-left: 1px solid transparent; color: var(--color-text-subtle); font-size: var(--font-size-7); line-height: var(--line-height-9); text-decoration: none; transition: color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard); }
 .docs-toc a:hover { color: var(--color-text-primary); }
 .docs-toc a.is-active { border-left-color: var(--color-accent); color: var(--color-accent-text); }
+.docs-toc a.is-sub { padding-left: 27px; font-size: var(--font-size-6); }
 
 @media (max-width: 1120px) {
     .docs-three-column { grid-template-columns: 228px minmax(0, 1fr); gap: 40px; }
@@ -3059,8 +3076,7 @@ body { font-size: var(--font-size-10); }
     .docs-article { max-width: 100%; padding-top: 28px; }
     .docs-article h1 { font-size: var(--font-size-display-5); }
     .docs-article-lead { font-size: var(--font-size-10); }
-    .docs-content-section h2 { font-size: var(--font-size-14); }
-    .docs-content-section p { font-size: var(--font-size-9); }
+    .docs-prose h2 { font-size: var(--font-size-14); }
     .docs-code-header { padding-left: 13px; }
     .docs-code pre { padding: 14px 13px 15px; font-size: var(--font-size-6); }
     .docs-page-pagination { gap: 8px; margin-top: 40px; }

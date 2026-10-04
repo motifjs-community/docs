@@ -68,31 +68,6 @@ export class Counter extends Component<HTMLDivElement> {
     }
 };
 
-// A class component is mounted as an instance; Function and Options components go in as a JSX tag.
-// Mounting looks the same in both writing styles.
-const mountClass = `import { Application } from '@motifx/core';
-import { Counter } from './counter';
-
-const app = Application.CreateBuilder().build();
-app.run('#app', new Counter());`;
-
-const mountTag = `import { Application } from '@motifx/core';
-import { Counter } from './counter';
-
-const app = Application.CreateBuilder().build();
-app.run('#app', <Counter />);`;
-
-const mountByComponentStyle: Record<ComponentStyle, string> = {
-    class: mountClass,
-    function: mountTag,
-    options: mountTag
-};
-
-export const mountExamples: CodeVariants = {
-    declarative: mountByComponentStyle,
-    imperative: mountByComponentStyle
-};
-
 export const writingStyles: { value: WritingStyle; label: string }[] = [
     { value: 'declarative', label: 'Declarative' },
     { value: 'imperative', label: 'Imperative' }

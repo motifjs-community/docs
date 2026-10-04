@@ -1,15 +1,15 @@
 import { useNavigation } from '@motifx/core';
-import { t } from '../i18n';
+import { localePath, stripLocale, t } from '../i18n';
 import { BrandMark, BrandWordmark } from '../components/Brand';
 
 export default function SiteFooter() {
     const navigation = useNavigation();
 
     return (
-        <footer class={() => navigation.uri.startsWith('/docs/') ? 'home-footer is-docs-reader' : 'home-footer'}>
+        <footer class={() => stripLocale(navigation.uri).startsWith('/docs/') ? 'home-footer is-docs-reader' : 'home-footer'}>
             <div class="footer-main">
                 <div class="footer-brand-column">
-                    <a href="/" class="footer-brand" rel="router" aria-label={() => t('header.home')}>
+                    <a href={() => localePath('/')} class="footer-brand" rel="router" aria-label={() => t('header.home')}>
                         <BrandMark />
                         <BrandWordmark />
                     </a>
@@ -18,17 +18,17 @@ export default function SiteFooter() {
                 </div>
                 <div class="footer-column">
                     <h3>{() => t('footer.explore')}</h3>
-                    <a href="/#why-motifjs">{() => t('footer.why')}</a>
-                    <a href="/#ways-to-build">{() => t('footer.ways')}</a>
-                    <a href="/#runtime">{() => t('footer.runtime')}</a>
-                    <a href="/#explore">{() => t('footer.features')}</a>
+                    <a href={() => localePath('/#why-motifjs')}>{() => t('footer.why')}</a>
+                    <a href={() => localePath('/#ways-to-build')}>{() => t('footer.ways')}</a>
+                    <a href={() => localePath('/#runtime')}>{() => t('footer.runtime')}</a>
+                    <a href={() => localePath('/#explore')}>{() => t('footer.features')}</a>
                 </div>
                 <div class="footer-column">
                     <h3>{() => t('footer.learn')}</h3>
-                    <a href="/docs/getting-started" rel="router">{() => t('footer.gettingStarted')}</a>
-                    <a href="/#examples">{() => t('footer.codeExamples')}</a>
-                    <a href="/docs/reactivity" rel="router">{() => t('footer.reactivity')}</a>
-                    <a href="/docs/routing" rel="router">{() => t('footer.routingServices')}</a>
+                    <a href={() => localePath('/docs/getting-started')} rel="router">{() => t('footer.gettingStarted')}</a>
+                    <a href={() => localePath('/#examples')}>{() => t('footer.codeExamples')}</a>
+                    <a href={() => localePath('/docs/reactivity')} rel="router">{() => t('footer.reactivity')}</a>
+                    <a href={() => localePath('/docs/routing')} rel="router">{() => t('footer.routingServices')}</a>
                 </div>
                 <div class="footer-column">
                     <h3>{() => t('footer.community')}</h3>

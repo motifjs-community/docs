@@ -4,6 +4,8 @@ import DocsArticlePage from './pages/DocsArticlePage';
 export const routes: RouteItem[] = [
     {
         path: '/',
+        // Turkish pages live under /tr. Same routes, so switching language keeps every component.
+        alias: '/tr',
         control: () => import('./layout/mainlayout'),
         childs: [
             {
