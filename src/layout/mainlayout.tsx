@@ -1,4 +1,4 @@
-import { reactive, RouterView, useNavigation } from "@motifx/core";
+import { reactive, RouterView, useNavigation, type Component } from "@motifx/core";
 import { localePath, localeState, rememberLocale, stripLocale, supportedLocales, t, type LocaleCode } from '../i18n';
 import SiteFooter from './SiteFooter';
 import { BrandMark, BrandWordmark } from '../components/Brand';
@@ -19,10 +19,49 @@ export default function MainLayout() {
         navigation.navigate(localePath(stripLocale(location.pathname), locale) + location.search + location.hash);
     };
 
+    // The header is fixed: it turns solid once the page moves, and on small screens it slides away
+    // while reading down and comes back on the way up. State lives on <html> so other bars can follow it.
+    const followScroll = (header: Component) => {
+        const root = document.documentElement;
+        const smallScreen = window.matchMedia('(max-width: 760px)');
+        const revealAbove = 120;
+        let lastY = window.scrollY;
+        let frame = 0;
+
+        const update = () => {
+            frame = 0;
+            const y = Math.max(0, window.scrollY);
+            root.classList.toggle('header-scrolled', y > 8);
+
+            const delta = y - lastY;
+            if (Math.abs(delta) < 6 && y > revealAbove) return; // ignore jitter, keep the reference point
+            const hide = smallScreen.matches && y > revealAbove && delta > 0
+                && !languageMenu.open && !root.classList.contains('docs-drawer-open');
+            root.classList.toggle('header-hidden', hide);
+            lastY = y;
+        };
+        const schedule = () => {
+            if (!frame) frame = requestAnimationFrame(update);
+        };
+        const reveal = () => root.classList.remove('header-hidden');
+
+        window.addEventListener('scroll', schedule, { passive: true });
+        smallScreen.addEventListener('change', schedule);
+        header.element.addEventListener('focusin', reveal); // keyboard users must never land on a hidden menu
+        header.motif.setDisposable(() => {
+            window.removeEventListener('scroll', schedule);
+            smallScreen.removeEventListener('change', schedule);
+            header.element.removeEventListener('focusin', reveal);
+            cancelAnimationFrame(frame);
+            root.classList.remove('header-scrolled', 'header-hidden');
+        });
+        update();
+    };
+
     return (
         <>
             {/* Keyed to the address, not to the rendered page, so the width holds while the next page loads. */}
-            <header class={() => stripLocale(navigation.uri).startsWith('/docs/') ? 'site-header is-docs-reader' : 'site-header'}>
+            <header class={() => stripLocale(navigation.uri).startsWith('/docs/') ? 'site-header is-docs-reader' : 'site-header'} onmounted={followScroll}>
                 <div class="header-inner">
                     <a href={() => localePath('/')} class="brand" onclick={() => { navigation.navigate(localePath('/'), { scroll: 'top' }); return false; }} aria-label={() => t('header.home')}>
                         <BrandMark />

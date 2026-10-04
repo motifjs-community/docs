@@ -22,7 +22,8 @@
 html {
     min-width: 320px;
     scroll-behavior: smooth;
-    scroll-padding-top: 5rem;
+    /* Anchor jumps stop below the fixed header. */
+    scroll-padding-top: calc(var(--layout-header-height-compact) + 16px);
 }
 
 body {
@@ -78,15 +79,29 @@ a {
 ::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: var(--radius-7); background: var(--color-scrollbar-thumb) padding-box; }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--color-scrollbar-thumb-hover); }
 
+/* Fixed, so the brand and main menu stay on screen. Transparent over the top of the page; once the
+   page moves it gets a backdrop and slims down, and on small screens it slides away while reading down. */
 .site-header {
-    position: absolute;
+    position: fixed;
     z-index: var(--z-header);
     top: 0;
     left: 0;
     width: 100%;
-    height: 76px;
+    height: var(--layout-header-height);
     border-bottom: 1px solid color-mix(in srgb, var(--white) 7.5%, transparent);
+    transition: height var(--duration-slow) var(--ease-standard), background-color var(--duration-slow) var(--ease-standard), transform var(--duration-slower) var(--ease-emphasized);
 }
+
+html.header-scrolled { --header-offset: var(--layout-header-height-compact); }
+html.header-hidden { --header-offset: 0px; }
+
+html.header-scrolled .site-header {
+    height: var(--layout-header-height-compact);
+    background-color: color-mix(in srgb, var(--color-bg-page) 84%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+}
+
+html.header-hidden .site-header { transform: translateY(-100%); }
 
 .header-inner {
     display: flex;
@@ -990,7 +1005,6 @@ a {
 }
 
 @media (max-width: 800px) {
-    .site-header { height: 68px; }
     .header-inner,
     .hero-inner,
     .section-wrap,
@@ -2701,15 +2715,15 @@ body { font-size: var(--font-size-10); }
 
 .docs-detail-shell {
     --docs-inline: max(var(--layout-docs-gutter), calc((100% - var(--layout-docs-max)) / 2));
-    padding-top: 76px;
+    padding-top: var(--layout-header-height);
     background: var(--color-bg-page);
     color: var(--color-text-primary);
 }
 
+/* Scrolls with the page on wide screens (the sidebar shows where you are); sticks under the header on small ones. */
 .docs-detail-toolbar {
-    position: sticky;
+    position: relative;
     z-index: var(--z-sticky);
-    top: 0;
     display: flex;
     height: var(--layout-docs-toolbar-height);
     align-items: center;
@@ -2786,6 +2800,7 @@ body { font-size: var(--font-size-10); }
     max-height: calc(100vh - var(--layout-docs-sticky-top) - 24px);
     overflow-y: auto;
     padding: 0 10px 16px 0;
+    transition: top var(--duration-slow) var(--ease-standard), max-height var(--duration-slow) var(--ease-standard);
 }
 
 .docs-code-pref {
@@ -2916,9 +2931,9 @@ body { font-size: var(--font-size-10); }
 .docs-article-rule { height: 1px; margin: 32px 0; background: linear-gradient(90deg, var(--color-border), transparent); }
 /* Article body: markdown rendered by the server, split into prose and code examples. */
 .docs-article-body { min-width: 0; }
-.docs-prose h2 { margin: 40px 0 12px; color: var(--color-text-primary); font-size: var(--font-size-15); font-weight: var(--font-weight-11); letter-spacing: var(--letter-spacing-7); scroll-margin-top: 24px; }
+.docs-prose h2 { margin: 40px 0 12px; color: var(--color-text-primary); font-size: var(--font-size-15); font-weight: var(--font-weight-11); letter-spacing: var(--letter-spacing-7); }
 .docs-prose:first-child > h2:first-child { margin-top: 0; }
-.docs-prose h3 { margin: 28px 0 10px; color: var(--color-text-primary); font-size: var(--font-size-12); font-weight: var(--font-weight-11); scroll-margin-top: 24px; }
+.docs-prose h3 { margin: 28px 0 10px; color: var(--color-text-primary); font-size: var(--font-size-12); font-weight: var(--font-weight-11); }
 .docs-prose p,
 .docs-prose ul,
 .docs-prose ol { margin: 0 0 12px; color: var(--color-text-muted); font-size: var(--font-size-9); line-height: var(--line-height-15); }
@@ -2996,7 +3011,7 @@ body { font-size: var(--font-size-10); }
 .docs-pagination-card.is-disabled { opacity: 0.55; }
 
 /* Right column: the active entry is marked on the column's own rule. */
-.docs-toc { position: sticky; top: var(--layout-docs-sticky-top); align-self: start; padding: 0 0 0 15px; border-left: 1px solid var(--color-border); }
+.docs-toc { position: sticky; top: var(--layout-docs-sticky-top); align-self: start; padding: 0 0 0 15px; border-left: 1px solid var(--color-border); transition: top var(--duration-slow) var(--ease-standard); }
 .docs-toc h2 { margin: 0 0 10px; color: var(--color-text-primary); font-size: var(--font-size-7); font-weight: var(--font-weight-14); }
 .docs-toc nav { display: grid; gap: 2px; }
 .docs-toc a { margin-left: -16px; padding: 5px 0 5px 15px; border-left: 1px solid transparent; color: var(--color-text-subtle); font-size: var(--font-size-7); line-height: var(--line-height-9); text-decoration: none; transition: color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard); }
@@ -3009,10 +3024,6 @@ body { font-size: var(--font-size-10); }
     .docs-toc { display: none; }
 }
 
-@media (max-width: 800px) {
-    .docs-detail-shell { padding-top: 68px; }
-}
-
 @media (max-width: 760px) {
     .docs-home { padding: 68px 20px 70px; }
     .docs-home-hero { min-height: 285px; }
@@ -3022,7 +3033,12 @@ body { font-size: var(--font-size-10); }
     .docs-category-grid { grid-template-columns: 1fr; gap: 12px; }
     .docs-category-card { min-height: 0; padding: 21px; }
     .docs-category-links { grid-template-columns: 1fr; }
-    .docs-detail-toolbar { gap: 12px; }
+    .docs-detail-toolbar {
+        position: sticky;
+        top: var(--header-offset);
+        gap: 12px;
+        transition: top var(--duration-slower) var(--ease-emphasized);
+    }
     .docs-toolbar-path { display: none; }
     .docs-menu-button,
     .docs-drawer-close { display: inline-flex; }

@@ -230,7 +230,18 @@
     --layout-docs-max: 1400px;
     --layout-docs-gutter: 32px;
     --layout-docs-toolbar-height: 54px;
-    --layout-docs-sticky-top: calc(var(--layout-docs-toolbar-height) + 32px);
+    --layout-header-height: 76px;
+    --layout-header-height-compact: 60px;
+    /* Space the fixed site header takes right now; style.css changes it while the page scrolls. */
+    --header-offset: var(--layout-header-height);
+    --layout-docs-sticky-top: calc(var(--header-offset) + 28px);
+}
+
+@media (max-width: 800px) {
+    :root {
+        --layout-header-height: 68px;
+        --layout-header-height-compact: 56px;
+    }
 }
 
 /* 3. Semantic: dark theme is the default */
