@@ -12,4 +12,9 @@
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 
+  <!-- The synced docs database ships with the site; `npm run release` builds both first. -->
+  <ItemGroup>
+    <None Include="App_Data\docs.db" CopyToPublishDirectory="PreserveNewest" Condition="Exists('App_Data\docs.db')" />
+  </ItemGroup>
+
 </Project>

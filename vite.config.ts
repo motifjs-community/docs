@@ -13,5 +13,10 @@ export default defineConfig({
         fs: { allow: ['.'] },
         // Docs come from the .NET server (`dotnet run --project server/MotifJs.Docs`).
         proxy: { '/api': 'http://localhost:5125' },
+    },
+    build: {
+        // The .NET server serves the site from its wwwroot.
+        outDir: 'server/MotifJs.Docs/wwwroot',
+        emptyOutDir: true,
     }
 });

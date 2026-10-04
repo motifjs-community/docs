@@ -8,7 +8,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "docs:sync": "dotnet run --project server/MotifJs.Docs --no-launch-profile -- sync"
+    "build": "vite build",
+    "server": "dotnet run --project server/MotifJs.Docs --no-launch-profile -- --urls http://localhost:5125",
+    "docs:sync": "dotnet run --project server/MotifJs.Docs --no-launch-profile -- sync",
+    "release": "npm run build && npm run docs:sync && dotnet publish server/MotifJs.Docs -c Release -o publish"
   },
   "dependencies": {
     "@motifx/core": "^1.0.1"
