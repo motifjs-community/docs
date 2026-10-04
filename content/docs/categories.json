@@ -11,36 +11,57 @@
     }
   },
   {
-    "id": "ui-state",
+    "id": "core",
     "title": {
-      "en": "UI and state",
-      "tr": "Arayüz ve state"
+      "en": "Core concepts",
+      "tr": "Temel kavramlar"
     },
     "description": {
-      "en": "Connect state to views, events, and forms.",
-      "tr": "State’i görünümlere, olaylara ve formlara bağlayın."
+      "en": "Components, JSX, reactivity, events, forms, and the lifecycle.",
+      "tr": "Bileşenler, JSX, reaktivite, olaylar, formlar ve yaşam döngüsü."
     }
   },
   {
-    "id": "application",
+    "id": "app",
     "title": {
       "en": "Application structure",
       "tr": "Uygulama yapısı"
     },
     "description": {
-      "en": "Organize navigation, lifecycles, services, and resources.",
-      "tr": "Gezinme, lifecycle, servis ve kaynakları düzenleyin."
+      "en": "Organize navigation, services, styling, resources, and errors.",
+      "tr": "Gezinme, servis, stil, kaynak ve hata yönetimini düzenleyin."
+    }
+  },
+  {
+    "id": "guides",
+    "title": {
+      "en": "Guides",
+      "tr": "Rehberler"
+    },
+    "description": {
+      "en": "Bring existing libraries into a MotifJS application.",
+      "tr": "Mevcut kütüphaneleri bir MotifJS uygulamasına taşıyın."
     }
   },
   {
     "id": "reference",
     "title": {
-      "en": "Reference and integrations",
-      "tr": "Referans ve entegrasyonlar"
+      "en": "Reference",
+      "tr": "Referans"
     },
     "description": {
-      "en": "Look up APIs and connect existing libraries.",
-      "tr": "API’lere bakın ve mevcut kütüphaneleri bağlayın."
+      "en": "Look up APIs, queries, and collections.",
+      "tr": "API’lere, sorgulara ve koleksiyonlara bakın."
+    }
+  },{
+    "id": "advanced",
+    "title": {
+      "en": "Advanced",
+      "tr": "Gelişmiş"
+    },
+    "description": {
+      "en": "Advanced",
+      "tr": "Gelişmiş"
     }
   }
 ]
