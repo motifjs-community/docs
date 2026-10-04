@@ -11,6 +11,9 @@ Thumbs.db
 .vs/
 *.user
 
+# Docs content is kept out of the repository for now
+content/docs/
+
 # .NET server
 server/**/bin/
 server/**/obj/
