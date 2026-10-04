@@ -47,12 +47,10 @@ public sealed class DocContentException(string file, int line, string message)
 /// <see cref="Render"/> writes HTML once every file's address is known. Links between markdown files
 /// (<c>[x](./other.md#part)</c>) work in an editor as they are and become site links (<c>/docs/slug#part</c>).
 /// Consecutive code fences with the same <c>file=</c> become one example group; their <c>variant=</c> values let
-/// the site show the one that matches the reader's code style.
+/// the site show the one that matches the reader's code choices (see <see cref="CodeOptions"/>).
 /// </summary>
 public static class DocMarkdown
 {
-    private static readonly string[] WritingStyles = ["declarative", "imperative"];
-    private static readonly string[] ComponentStyles = ["class", "function", "options"];
 
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .UseYamlFrontMatter()
@@ -74,7 +72,8 @@ public static class DocMarkdown
     }
 
     /// <param name="resolveFile">Maps a linked markdown path, as written, to that page's slug; null when no such file exists.</param>
-    public static RenderedDoc Render(ParsedDoc parsed, Func<string, string?> resolveFile)
+    /// <param name="codeOptions">The code choices of the site, which <c>variant=</c> values are made of.</param>
+    public static RenderedDoc Render(ParsedDoc parsed, Func<string, string?> resolveFile, CodeOptions codeOptions)
     {
         var (file, meta, document) = parsed;
         var links = RewriteFileLinks(document, file, resolveFile);
@@ -102,17 +101,17 @@ public static class DocMarkdown
                     break;
 
                 case FencedCodeBlock fence:
-                    var group = new List<(FencedCodeBlock Block, CodeFence Fence)> { (fence, CodeFence.Parse(fence, file)) };
+                    var group = new List<(FencedCodeBlock Block, CodeFence Fence)> { (fence, CodeFence.Parse(fence, file, codeOptions)) };
                     while (group[0].Fence.File is not null
                         && i + 1 < blocks.Count
                         && blocks[i + 1] is FencedCodeBlock next
-                        && CodeFence.Parse(next, file) is { } nextFence
+                        && CodeFence.Parse(next, file, codeOptions) is { } nextFence
                         && nextFence.File == group[0].Fence.File)
                     {
                         group.Add((next, nextFence));
                         i++;
                     }
-                    WriteCodeGroup(renderer, group, file);
+                    WriteCodeGroup(renderer, group, file, codeOptions);
                     break;
 
                 default:
@@ -184,7 +183,7 @@ public static class DocMarkdown
         return Regex.Replace(message, @"^\(Line: .*?\): ", "");
     }
 
-    private static void WriteCodeGroup(HtmlRenderer renderer, List<(FencedCodeBlock Block, CodeFence Fence)> group, string file)
+    private static void WriteCodeGroup(HtmlRenderer renderer, List<(FencedCodeBlock Block, CodeFence Fence)> group, string file, CodeOptions codeOptions)
     {
         var first = group[0];
         var variants = group.Where(g => g.Fence.Variant is not null).ToList();
@@ -194,13 +193,14 @@ public static class DocMarkdown
             if (variants.Count != group.Count)
                 throw new DocContentException(file, first.Block.Line + 1, $"every block of {first.Fence.File} needs a variant once one of them has it");
 
-            var duplicate = variants.SelectMany(g => g.Fence.Variants.Select(v => (Variant: v, g.Block))).GroupBy(g => g.Variant).FirstOrDefault(g => g.Count() > 1);
+            var duplicate = variants.SelectMany(g => g.Fence.Variants.Select(v => (Variant: CodeOptions.Normalize(v), g.Block))).GroupBy(g => g.Variant).FirstOrDefault(g => g.Count() > 1);
             if (duplicate is not null)
                 throw new DocContentException(file, duplicate.Last().Block.Line + 1, $"variant {duplicate.Key} appears twice for {first.Fence.File}");
 
-            var missing = (from w in WritingStyles from c in ComponentStyles
-                           where !variants.Any(v => v.Fence.Matches(w, c))
-                           select $"{w}/{c}").ToList();
+            var missing = codeOptions.Combinations()
+                .Where(combination => !variants.Any(v => v.Fence.Variants.Any(p => CodeOptions.Matches(p, combination))))
+                .Select(combination => string.Join("/", combination))
+                .ToList();
             if (missing.Count > 0)
                 throw new DocContentException(file, first.Block.Line + 1, $"{first.Fence.File} has no example for {string.Join(", ", missing)}");
         }
@@ -236,7 +236,7 @@ public static class DocMarkdown
     /// <summary>The info string of a fence: <c>tsx file=counter.tsx variant=declarative/class</c>.</summary>
     private sealed record CodeFence(string? Language, string? File, string? Variant)
     {
-        public static CodeFence Parse(FencedCodeBlock block, string file)
+        public static CodeFence Parse(FencedCodeBlock block, string file, CodeOptions codeOptions)
         {
             string? name = null, variant = null;
 
@@ -251,25 +251,15 @@ public static class DocMarkdown
                 }
             }
 
-            if (variant?.Split(',').FirstOrDefault(v => !IsVariant(v)) is { } wrong)
-                throw new DocContentException(file, block.Line + 1, $"variant '{wrong}' is not one of declarative|imperative, class|function|options or writing/component");
+            if (variant?.Split(',').Select(codeOptions.Check).FirstOrDefault(problem => problem is not null) is { } problem)
+                throw new DocContentException(file, block.Line + 1, $"variant: {problem}");
             if (variant is not null && name is null)
                 throw new DocContentException(file, block.Line + 1, "a block with a variant needs file= so its siblings can be grouped");
 
             return new CodeFence(string.IsNullOrEmpty(block.Info) ? null : block.Info, name, variant);
         }
 
-        /// <summary>One block can stand for several styles: <c>variant=function,options</c>.</summary>
+        /// <summary>One block can stand for several choices: <c>variant=function,options</c>.</summary>
         public string[] Variants => Variant?.Split(',') ?? [];
-
-        public bool Matches(string writing, string component) =>
-            Variants.Any(v => v == $"{writing}/{component}" || v == writing || v == component);
-
-        private static bool IsVariant(string value) => value.Split('/') switch
-        {
-            [var one] => WritingStyles.Contains(one) || ComponentStyles.Contains(one),
-            [var writing, var component] => WritingStyles.Contains(writing) && ComponentStyles.Contains(component),
-            _ => false
-        };
     }
 }

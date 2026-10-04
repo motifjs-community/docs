@@ -2,14 +2,14 @@ import { localePath, localeState, t } from '../i18n';
 import type { DocLink } from '../content/docs/api';
 import { docsState, firstDocSlug } from '../content/docs/state';
 import { articleSegments, pickVariant, type ArticleSegment } from '../content/docs/segments';
-import { codeStyle } from '../preferences/code-style';
+import { codeChoices } from '../preferences/code-style';
 import { CodeBlock } from '../components/CodeBlock';
 
 /** One piece of an article: prose straight from the rendered markdown, or a code example. */
 function Segment(props: { segment: ArticleSegment }) {
     const segment = props.segment;
     if (segment.kind === 'code') {
-        return <CodeBlock file={segment.file} source={() => pickVariant(segment.variants, codeStyle.writingStyle, codeStyle.componentStyle)} />;
+        return <CodeBlock file={segment.file} source={() => pickVariant(segment.variants, codeChoices)} />;
     }
     return <div class="docs-prose" onbuilt={(c) => (c.element as HTMLElement).innerHTML = segment.html} />;
 }

@@ -14,6 +14,12 @@ declare module 'virtual:site-config' {
         defaultLocale: string;
         locales: { code: string; label: string }[];
         links: { repository: string; issues: string };
+        /** Choices readers make about code examples; empty when the site has none. The first choice is the default. */
+        codeOptions: {
+            id: string;
+            label: string | Record<string, string>;
+            choices: { id: string; label: string | Record<string, string> }[];
+        }[];
     };
     export default site;
 }

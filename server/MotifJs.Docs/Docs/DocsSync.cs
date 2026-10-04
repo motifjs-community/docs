@@ -12,7 +12,7 @@ namespace MotifJs.Docs.Docs;
 /// taken from the old database is its address history, so an address that loses its page keeps working
 /// as a redirect. Nothing is written unless every file is valid.
 /// </summary>
-public sealed partial class DocsSync(DocsOptions options, string contentPath, DocsDatabase database, TextWriter output)
+public sealed partial class DocsSync(DocsOptions options, CodeOptions codeOptions, string contentPath, DocsDatabase database, TextWriter output)
 {
     // Part of every page's hash, so a rendering change reports pages as updated.
     private const int RenderVersion = 2;
@@ -182,7 +182,7 @@ public sealed partial class DocsSync(DocsOptions options, string contentPath, Do
                     slugByPath.GetValueOrDefault(Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file.FullPath)!, written)));
                 try
                 {
-                    var doc = DocMarkdown.Render(file.Parsed, Resolve);
+                    var doc = DocMarkdown.Render(file.Parsed, Resolve, codeOptions);
                     pages.Add(new PageRow(file.Slug, file.Locale, file.Name, doc, Hash(file, addressMap)));
                 }
                 catch (DocContentException error)

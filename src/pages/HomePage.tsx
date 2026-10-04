@@ -3,7 +3,7 @@ import site from 'virtual:site-config';
 import { BrandMark } from '../components/Brand';
 import { codeExamples, writingStyles, componentStyles } from '../content/docs/code-examples';
 import { HighlightedCode } from '../components/HighlightedCode';
-import { codeStyle, resolveCode, setComponentStyle, setWritingStyle } from '../preferences/code-style';
+import { codeChoices, resolveCode, setCodeChoice } from '../preferences/code-style';
 
 const primaryRibbons = Array.from({ length: 17 }, (_, index) => {
     const offset = index * 13;
@@ -151,9 +151,9 @@ export default function HomePage() {
                                                     <button
                                                         key={style.value}
                                                         type="button"
-                                                        class={() => codeStyle.writingStyle === style.value ? 'segment is-selected' : 'segment'}
-                                                        aria-pressed={() => codeStyle.writingStyle === style.value}
-                                                        onclick={() => setWritingStyle(style.value)}
+                                                        class={() => codeChoices.writing === style.value ? 'segment is-selected' : 'segment'}
+                                                        aria-pressed={() => codeChoices.writing === style.value}
+                                                        onclick={() => setCodeChoice('writing', style.value)}
                                                     >{style.label}</button>
                                                 ))}
                                             </div>
@@ -165,9 +165,9 @@ export default function HomePage() {
                                                     <button
                                                         key={style.value}
                                                         type="button"
-                                                        class={() => codeStyle.componentStyle === style.value ? 'segment is-selected' : 'segment'}
-                                                        aria-pressed={() => codeStyle.componentStyle === style.value}
-                                                        onclick={() => setComponentStyle(style.value)}
+                                                        class={() => codeChoices.component === style.value ? 'segment is-selected' : 'segment'}
+                                                        aria-pressed={() => codeChoices.component === style.value}
+                                                        onclick={() => setCodeChoice('component', style.value)}
                                                     >{style.label}</button>
                                                 ))}
                                             </div>

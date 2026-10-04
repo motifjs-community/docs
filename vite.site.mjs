@@ -24,13 +24,26 @@ export default function siteConfig() {
             if (!existsSync(resolve(`src/content/locales/${code}.json`))) fail(`"${code}" has no src/content/locales/${code}.json`);
         }
 
+        const codeOptions = config.codeOptions ?? [];
+        if (!Array.isArray(codeOptions)) fail('"codeOptions" must be a list');
+        const choiceIds = [];
+        for (const option of codeOptions) {
+            if (!option.id || !option.label) fail('every code option needs an "id" and a "label"');
+            if (!Array.isArray(option.choices) || option.choices.length === 0) fail(`code option "${option.id}" needs at least one choice`);
+            for (const choice of option.choices) {
+                if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(choice.id ?? '')) fail(`code choice "${choice.id}" must be lowercase letters, digits and dashes`);
+                if (choiceIds.includes(choice.id)) fail(`code choice "${choice.id}" is used twice; choice ids must be unique across options`);
+                choiceIds.push(choice.id);
+            }
+        }
+
         const logoFile = resolve(config.logo?.mark ?? '');
         if (!config.logo?.mark || !existsSync(logoFile)) fail(`logo.mark "${config.logo?.mark}" not found`);
         const svg = readFileSync(logoFile, 'utf8');
         const viewBox = /<svg[^>]*\sviewBox="([^"]+)"/.exec(svg)?.[1] ?? fail(`${config.logo.mark} needs a viewBox`);
         const markup = /<svg[^>]*>([\s\S]*)<\/svg>/.exec(svg)?.[1].trim() ?? '';
 
-        site = { ...config, logo: { ...config.logo, viewBox, markup } };
+        site = { ...config, codeOptions, logo: { ...config.logo, viewBox, markup } };
         return site;
     };
 

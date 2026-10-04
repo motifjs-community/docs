@@ -1,46 +1,34 @@
 import { reactive, RouterView, useNavigation, type Component } from '@motifx/core';
 import { prefetchPage } from '../content/docs/api';
 import { docsState, showNav, showPage } from '../content/docs/state';
-import { writingStyles, componentStyles } from '../content/docs/code-examples';
-import { codeStyle, setComponentStyle, setWritingStyle } from '../preferences/code-style';
-import { localePath, localeState, setPageTitle, t } from '../i18n';
+import { codeChoices, codeOptions, setCodeChoice } from '../preferences/code-style';
+import { localePath, localeState, localized, setPageTitle, t } from '../i18n';
 import { BrandMark } from '../components/Brand';
 
 /** A heading counts as "current" once its top passes this line (px from the viewport top). */
 const activeSectionLine = 140;
 
+/** The code options of site.config.json; not shown at all when the site has none. */
 function CodeStylePicker() {
     return (
-        <section class="docs-code-pref" aria-label={() => t('docs.code.preference')}>
+        <section class="docs-code-pref" aria-label={() => t('docs.code.preference')} x-display={codeOptions.length > 0}>
             <div class="docs-code-pref-title">{() => t('docs.code.preference')}</div>
-            <div class="docs-code-pref-group">
-                <span class="docs-code-pref-label">{() => t('home.preview.writingStyle')}</span>
-                <div class="docs-code-pref-segments" role="group" aria-label={() => t('home.preview.writingStyle')}>
-                    {writingStyles.map((style) => (
-                        <button
-                            key={style.value}
-                            type="button"
-                            class={() => codeStyle.writingStyle === style.value ? 'docs-code-pref-option is-selected' : 'docs-code-pref-option'}
-                            aria-pressed={() => codeStyle.writingStyle === style.value}
-                            onclick={() => setWritingStyle(style.value)}
-                        >{style.label}</button>
-                    ))}
+            {codeOptions.map((option) => (
+                <div key={option.id} class="docs-code-pref-group">
+                    <span class="docs-code-pref-label">{() => localized(option.label)}</span>
+                    <div class="docs-code-pref-segments" role="group" aria-label={() => localized(option.label)}>
+                        {option.choices.map((choice) => (
+                            <button
+                                key={choice.id}
+                                type="button"
+                                class={() => codeChoices[option.id] === choice.id ? 'docs-code-pref-option is-selected' : 'docs-code-pref-option'}
+                                aria-pressed={() => codeChoices[option.id] === choice.id}
+                                onclick={() => setCodeChoice(option.id, choice.id)}
+                            >{() => localized(choice.label)}</button>
+                        ))}
+                    </div>
                 </div>
-            </div>
-            <div class="docs-code-pref-group">
-                <span class="docs-code-pref-label">{() => t('home.preview.componentStyle')}</span>
-                <div class="docs-code-pref-segments" role="group" aria-label={() => t('home.preview.componentStyle')}>
-                    {componentStyles.map((style) => (
-                        <button
-                            key={style.value}
-                            type="button"
-                            class={() => codeStyle.componentStyle === style.value ? 'docs-code-pref-option is-selected' : 'docs-code-pref-option'}
-                            aria-pressed={() => codeStyle.componentStyle === style.value}
-                            onclick={() => setComponentStyle(style.value)}
-                        >{style.label}</button>
-                    ))}
-                </div>
-            </div>
+            ))}
             <p class="docs-code-pref-hint">{() => t('docs.code.preferenceHint')}</p>
         </section>
     );

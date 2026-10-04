@@ -13,7 +13,7 @@ var docsDatabase = new DocsDatabase(FromContentRoot(docsOptions.DatabasePath));
 // `dotnet run -- sync` rebuilds the database from the markdown files and exits.
 if (args.FirstOrDefault() == "sync")
 {
-    var sync = new DocsSync(docsOptions, FromContentRoot(docsOptions.ContentPath), docsDatabase, Console.Out);
+    var sync = new DocsSync(docsOptions, site.ToCodeOptions(), FromContentRoot(docsOptions.ContentPath), docsDatabase, Console.Out);
     return sync.Run();
 }
 

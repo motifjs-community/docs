@@ -7,7 +7,7 @@ with its .NET server on Linux or Windows, or as static files on GitHub Pages and
 
 - [How it fits together](#how-it-fits-together)
 - [Requirements](#requirements)
-- [Configure: `site.config.json`](#configure-siteconfigjson)
+- [Configure: `site.config.json`](#configure-siteconfigjson) and [code options](#code-options)
 - [Languages](#languages)
 - [Content](#content)
 - [Development](#development)
@@ -73,7 +73,26 @@ copies it next to the server, so the server needs no other copy.
   "links": {
     "repository": "https://github.com/motifjsdev/motifjs",
     "issues": "https://github.com/motifjsdev/motifjs/issues"
-  }
+  },
+  "codeOptions": [
+    {
+      "id": "writing",
+      "label": { "en": "Writing style", "tr": "Yazım biçimi" },
+      "choices": [
+        { "id": "declarative", "label": "Declarative" },
+        { "id": "imperative", "label": "Imperative" }
+      ]
+    },
+    {
+      "id": "component",
+      "label": { "en": "Component style", "tr": "Component biçimi" },
+      "choices": [
+        { "id": "class", "label": "Class" },
+        { "id": "function", "label": "Function" },
+        { "id": "options", "label": "Options" }
+      ]
+    }
+  ]
 }
 ```
 
@@ -86,9 +105,60 @@ copies it next to the server, so the server needs no other copy.
 | `defaultLocale` | The language served at the root (`/docs/routing`). The others live under their code (`/tr/docs/routing`). Must be one of `locales`. |
 | `locales` | The languages: `code` is used in addresses and file names, `label` is shown in the language menu. |
 | `links.repository`, `links.issues` | Targets of the GitHub links in the header, footer and home page. |
+| `codeOptions` | The code preference panel of the docs (see below). Leave it out, or `[]`, for no panel. |
 
 Mistakes stop the build with a message naming what to fix, for example a language without a texts
 file or a logo that does not exist.
+
+### Code options
+
+If your examples can be written in more than one way, readers pick their way once in the docs sidebar,
+and every example on every page follows it. The choice is remembered in the browser. MotifJS uses a writing
+style and a component style; another project could offer, say, JavaScript or TypeScript, or npm or pnpm:
+
+```json
+"codeOptions": [
+  {
+    "id": "lang",
+    "label": "Language",
+    "choices": [
+      { "id": "js", "label": "JavaScript" },
+      { "id": "ts", "label": "TypeScript" }
+    ]
+  },
+  {
+    "id": "pm",
+    "label": { "en": "Package manager", "tr": "Paket yöneticisi" },
+    "choices": [
+      { "id": "npm", "label": "npm" },
+      { "id": "pnpm", "label": "pnpm" }
+    ]
+  }
+]
+```
+
+- Each option becomes one row of buttons; its first choice is the default.
+- A `label` is plain text, or one text per language.
+- Choice `id`s must be unique across all options, and use lowercase letters, digits and dashes.
+- In markdown, the blocks of one example name the choices they are for:
+
+  ````md
+  ```js file=install variant=js
+  ...
+  ```
+  ```ts file=install variant=ts/npm
+  ...
+  ```
+  ```ts file=install variant=ts/pnpm
+  ...
+  ```
+  ````
+
+  Every combination of choices needs a block, and the sync names any that are missing. See
+  [Writing docs](README.md#writing-docs) for the full syntax.
+
+Changing the options can make existing examples invalid; run `npm run docs:sync` afterwards and fix what
+it reports.
 
 Also replace `public/favicon.svg`, and `theme-color` in `index.html` if you change the colours.
 The colours themselves are design tokens in `src/styles/tokens.css`.

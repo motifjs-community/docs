@@ -86,8 +86,23 @@ function wrapTables(root: DocumentFragment): void {
     }
 }
 
-/** The example that fits a code style: exact match first, then component style, then writing style. */
-export function pickVariant(variants: CodeVariant[], writingStyle: string, componentStyle: string): string {
-    const find = (variant: string) => variants.find((v) => v.variant?.split(',').includes(variant));
-    return (find(`${writingStyle}/${componentStyle}`) ?? find(componentStyle) ?? find(writingStyle) ?? variants[0])?.code ?? '';
+/**
+ * The example that fits the reader's code choices. A block's variant lists patterns ("declarative/class",
+ * "class", "function,options"); a pattern fits when all its choices are chosen, and the one naming the most
+ * choices wins (the first block on a tie).
+ */
+export function pickVariant(variants: CodeVariant[], choices: Record<string, string>): string {
+    const chosen = new Set(Object.values(choices));
+    let best: CodeVariant | undefined;
+    let bestScore = 0;
+    for (const variant of variants) {
+        for (const pattern of variant.variant?.split(',') ?? []) {
+            const ids = pattern.split('/');
+            if (ids.length > bestScore && ids.every((id) => chosen.has(id))) {
+                best = variant;
+                bestScore = ids.length;
+            }
+        }
+    }
+    return (best ?? variants[0])?.code ?? '';
 }

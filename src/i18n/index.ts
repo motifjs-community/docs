@@ -59,6 +59,11 @@ export function t(key: MessageKey): string {
     return catalogs[localeState.current]?.[key] ?? catalogs[defaultLocale]?.[key] ?? key;
 }
 
+/** A label from site.config.json: plain text, or one text per language. */
+export function localized(text: string | Record<string, string>): string {
+    return typeof text === 'string' ? text : text[localeState.current] ?? text[defaultLocale] ?? Object.values(text)[0] ?? '';
+}
+
 /** Sets the tab title; pages without their own title get the site title. */
 export function setPageTitle(title?: string): void {
     document.title = title ? `${title} — ${site.name}` : t('meta.title');

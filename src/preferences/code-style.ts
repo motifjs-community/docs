@@ -1,47 +1,43 @@
 import { reactive } from '@motifx/core';
-import { writingStyles, componentStyles, type WritingStyle, type ComponentStyle, type CodeVariants } from '../content/docs/code-examples';
+import site from 'virtual:site-config';
+import type { CodeVariants, ComponentStyle, WritingStyle } from '../content/docs/code-examples';
+
+/** The code choices of site.config.json ("codeOptions"); empty when the site has none. */
+export const codeOptions = site.codeOptions;
 
 const storageKey = 'motifjs-code-style';
 
-function getInitialCodeStyle(): { writingStyle: WritingStyle; componentStyle: ComponentStyle } {
-    let saved: { writingStyle?: string; componentStyle?: string } | null = null;
-
+/** The saved choice of each option, or its first choice. */
+function initialChoices(): Record<string, string> {
+    let saved: Record<string, string> | null = null;
     try {
         saved = JSON.parse(localStorage.getItem(storageKey) ?? 'null');
     } catch {
         saved = null;
     }
 
-    return {
-        writingStyle: writingStyles.find(({ value }) => value === saved?.writingStyle)?.value ?? 'declarative',
-        componentStyle: componentStyles.find(({ value }) => value === saved?.componentStyle)?.value ?? 'class'
-    };
+    return Object.fromEntries(codeOptions.map((option) => [
+        option.id,
+        option.choices.find(({ id }) => id === saved?.[option.id])?.id ?? option.choices[0].id
+    ]));
 }
 
-/** Site-wide code preference: every styled example on the site follows it. */
-export const codeStyle = reactive(getInitialCodeStyle());
+/** Site-wide code preference, option id → choice id: every example on the site follows it. */
+export const codeChoices: Record<string, string> = reactive(initialChoices());
 
-function saveCodeStyle(): void {
+export function setCodeChoice(optionId: string, choiceId: string): void {
+    codeChoices[optionId] = choiceId;
     try {
-        localStorage.setItem(storageKey, JSON.stringify({
-            writingStyle: codeStyle.writingStyle,
-            componentStyle: codeStyle.componentStyle
-        }));
+        localStorage.setItem(storageKey, JSON.stringify(codeChoices));
     } catch {
         // Storage can be unavailable (private mode); the choice still applies for this visit.
     }
 }
 
-export function setWritingStyle(style: WritingStyle): void {
-    codeStyle.writingStyle = style;
-    saveCodeStyle();
-}
-
-export function setComponentStyle(style: ComponentStyle): void {
-    codeStyle.componentStyle = style;
-    saveCodeStyle();
-}
-
+/** The home page example, written for MotifJS's own writing and component styles. */
 export function resolveCode(source: string | CodeVariants): string {
-    return typeof source === 'string' ? source : source[codeStyle.writingStyle][codeStyle.componentStyle];
+    if (typeof source === 'string') return source;
+    const writing = (codeChoices.writing ?? 'declarative') as WritingStyle;
+    const component = (codeChoices.component ?? 'class') as ComponentStyle;
+    return source[writing]?.[component] ?? source.declarative.class;
 }

@@ -14,5 +14,24 @@
   "links": {
     "repository": "https://github.com/motifjsdev/motifjs",
     "issues": "https://github.com/motifjsdev/motifjs/issues"
-  }
+  },
+  "codeOptions": [
+    {
+      "id": "writing",
+      "label": { "en": "Writing style", "tr": "Yazım biçimi" },
+      "choices": [
+        { "id": "declarative", "label": "Declarative" },
+        { "id": "imperative", "label": "Imperative" }
+      ]
+    },
+    {
+      "id": "component",
+      "label": { "en": "Component style", "tr": "Component biçimi" },
+      "choices": [
+        { "id": "class", "label": "Class" },
+        { "id": "function", "label": "Function" },
+        { "id": "options", "label": "Options" }
+      ]
+    }
+  ]
 }
