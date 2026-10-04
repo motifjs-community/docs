@@ -2,8 +2,8 @@
 
 This repository is the MotifJS website, and it is also a small documentation system that can be
 forked and run for any project. You need to change three things: one settings file, your interface
-texts, and your markdown pages. This guide covers configuring a copy, working on it, and hosting it
-on Linux or Windows.
+texts, and your markdown pages. This guide covers configuring a copy, working on it, and hosting it:
+with its .NET server on Linux or Windows, or as static files on GitHub Pages and similar hosts.
 
 - [How it fits together](#how-it-fits-together)
 - [Requirements](#requirements)
@@ -11,6 +11,8 @@ on Linux or Windows.
 - [Languages](#languages)
 - [Content](#content)
 - [Development](#development)
+- [Two ways to host](#two-ways-to-host)
+- [Static hosting: GitHub Pages](#static-hosting-github-pages)
 - [Release build](#release-build)
 - [Hosting on Linux](#hosting-on-linux)
 - [Hosting on Windows](#hosting-on-windows)
@@ -39,7 +41,7 @@ title, description, canonical and language links, and a plain HTML copy of the a
 page it sends.
 
 A production server only needs the published folder. Node.js and the markdown files stay on your
-machine or your CI.
+machine or your CI. A static host needs no server at all: see [Two ways to host](#two-ways-to-host).
 
 ## Requirements
 
@@ -133,6 +135,127 @@ and `npm run server`; restart the server after changing server code.
 
 To serve the built site from the server alone, as in production, run `npm run build` and open
 <http://localhost:5125>.
+
+## Two ways to host
+
+Both use the same content, settings and design; pick per site.
+
+| | .NET server | Static files |
+|---|---|---|
+| Where | a VPS, IIS, any machine with the ASP.NET Core runtime | GitHub Pages, Netlify, Cloudflare Pages, any web server |
+| Build | `npm run release` → `publish/` | `npm run export` → `dist/` |
+| New content | swap `docs.db` or sync on the server; no rebuild | build again and upload; CI can do it on every push |
+| Old addresses | permanent redirect (301) | a small page that forwards at once; crawlers follow it, though less surely than a 301 |
+| Address of the site | anywhere | the root of a domain (see below) |
+
+## Static hosting: GitHub Pages
+
+```sh
+npm run export
+```
+
+This builds the site, syncs the docs and writes the whole site to `dist/`:
+
+- one `.html` file per page and language (`docs/routing.html`, `tr/docs/routing.html`), which static
+  hosts serve at the address without `.html`
+- `api/docs/{code}/nav.json` and `api/docs/{code}/pages/{slug}.json`: the same answers the server gives,
+  so the site reads its docs the same way
+- `sitemap.xml`, `robots.txt`, `404.html`
+- a forwarding page at every old address
+
+Two requirements:
+
+- `url` in `site.config.json` must be set: a static file has no request to take the address from, and
+  the export stops without it.
+- The site must be served at the root of its domain. GitHub Pages serves a project repository under
+  `/<repository>/`, which the site does not support yet. Use a custom domain, or a repository named
+  `<user>.github.io`.
+
+To look at the result locally, serve `dist/` with a server that maps `/page` to `page.html`, for
+example `npx serve dist`.
+
+### Publish with GitHub Actions
+
+Add `.github/workflows/pages.yml`, then pick **GitHub Actions** as the source under
+**Settings → Pages**. If you use a custom domain, set it on the same page. Every push to `main` then
+rebuilds and publishes the site.
+
+```yaml
+name: Publish docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      # Keeps the address history between runs (see below).
+      - uses: actions/cache@v4
+        with:
+          path: server/MotifJs.Docs/App_Data/docs.db
+          key: docs-db-${{ github.run_id }}
+          restore-keys: docs-db-
+      - run: npm ci
+      - run: npm run export
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+**Removed and renamed pages.** The sync creates redirects for addresses that disappeared by comparing
+with the previous `docs.db`. A CI run starts from a clean checkout, so the workflow keeps the database
+in the Actions cache. GitHub drops caches that go unused for a week, though, so when you rename or
+remove a page, also list the old address in `redirectFrom` (see [Writing docs](README.md#writing-docs)).
+Those redirects come from the markdown itself and survive any build.
+
+### Other static hosts
+
+Upload `dist/` to any host that serves `page.html` at `/page`. Netlify and Cloudflare Pages do this by
+default. Building there needs the .NET SDK, so it is usually simpler to build in GitHub Actions as above
+and deploy the folder. With your own nginx:
+
+```nginx
+server {
+    listen 80;
+    server_name docs.example.com;
+    root /var/www/docs;
+
+    location / {
+        try_files $uri $uri.html $uri/ =404;
+    }
+    error_page 404 /404.html;
+}
+```
 
 ## Release build
 
@@ -327,3 +450,5 @@ set with `--urls` or `ASPNETCORE_URLS`.
 | Sync says the database "is in use and could not be replaced" | An older server version keeps the file open. Restart the server with the current version. |
 | Canonical links or the sitemap show `localhost` or `http://` | Set `url` in `site.config.json` (or `Site:Url`) to the public address. |
 | Build stops with `site.config.json: ...` | The message names the problem, e.g. a language without `src/content/locales/{code}.json`. |
+| Export stops: "set url" or "has a path" | Set `url` in `site.config.json` to the root address of the site, e.g. `https://docs.example.com`. |
+| Static site: pages work from the start page but reloading one shows 404 | The host does not serve `page.html` at `/page`; see [Other static hosts](#other-static-hosts). |

@@ -42,7 +42,8 @@ function getJson<T>(url: string): Promise<T | null> {
     return request;
 }
 
-const pageUrl = (slug: string, locale: LocaleCode) => `/api/docs/pages/${encodeURIComponent(slug)}?locale=${locale}`;
+// Plain paths, so a static export can serve the same addresses as files.
+const pageUrl = (slug: string, locale: LocaleCode) => `/api/docs/${locale}/pages/${encodeURIComponent(slug)}.json`;
 
 // The server embeds the page it was asked for, so the first render needs no request.
 const embedded = document.getElementById('doc-data');
@@ -56,11 +57,12 @@ if (embedded?.textContent) {
 }
 
 export function loadNav(locale: LocaleCode): Promise<NavCategory[]> {
-    return getJson<NavCategory[]>(`/api/docs/nav?locale=${locale}`).then((nav) => nav ?? []);
+    return getJson<NavCategory[]>(`/api/docs/${locale}/nav.json`).then((nav) => nav ?? []);
 }
 
 /**
- * A page by address. A moved page arrives under its new slug (the server redirects), so callers compare
+ * A page by address. A moved page arrives under its new slug (the server redirects; the static export
+ * stores the new page at the old address), so callers compare
  * `page.slug` with what they asked for; a removed one comes back as {@link MovedToHome}.
  */
 export function loadPage(slug: string, locale: LocaleCode): Promise<DocPage | MovedToHome | null> {

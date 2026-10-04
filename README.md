@@ -7,7 +7,7 @@ the markdown files in `content/docs`.
 Requires Node.js and the .NET 10 SDK.
 
 **Running your own docs site?** See [SELF-HOSTING.md](SELF-HOSTING.md): configuring a fork with
-`site.config.json`, adding languages, and deploying to Linux or Windows.
+`site.config.json`, adding languages, and deploying to Linux, Windows or GitHub Pages.
 
 ## Development
 
@@ -67,6 +67,7 @@ page disappears from a language, its old address there redirects (301) to the pa
 
 ```sh
 npm run release     # builds the site, syncs the docs, publishes the server to ./publish
+npm run export      # or: the whole site as static files in ./dist (GitHub Pages and the like)
 ```
 
 `publish/` contains everything the host needs, including `wwwroot` and `App_Data/docs.db`. Hosting it on

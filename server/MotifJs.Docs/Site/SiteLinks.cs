@@ -15,9 +15,12 @@ public sealed partial class SiteLinks(DocsOptions options, IConfiguration config
     public string DefaultLocale => options.DefaultLocale;
     public IReadOnlyList<string> Locales => options.Locales;
 
-    /// <summary>Absolute base: Site:Url from appsettings or the environment, else "url" in site.config.json, else the request.</summary>
+    /// <summary>The public address: Site:Url from appsettings or the environment, else "url" in site.config.json.</summary>
+    public string? ConfiguredUrl => (configuration["Site:Url"] ?? (string.IsNullOrWhiteSpace(site.Url) ? null : site.Url))?.TrimEnd('/');
+
+    /// <summary>Absolute base: the configured address, else the request's.</summary>
     public string BaseUrl(HttpContext context) =>
-        (configuration["Site:Url"] ?? (string.IsNullOrWhiteSpace(site.Url) ? null : site.Url) ?? $"{context.Request.Scheme}://{context.Request.Host}").TrimEnd('/');
+        ConfiguredUrl ?? $"{context.Request.Scheme}://{context.Request.Host}";
 
     /// <summary>"/tr/docs/routing" → ("tr", "/docs/routing"); unprefixed paths are the default locale.</summary>
     public (string Locale, string Route) Split(string path)

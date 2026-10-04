@@ -92,6 +92,18 @@ public sealed class DocsStore(DocsDatabase database, DocsOptions options)
         return reader.Read() ? (true, reader.IsDBNull(0) ? null : reader.GetString(0)) : (false, null);
     }
 
+    /// <summary>Every redirect; for the static export, which writes them out as pages.</summary>
+    public IReadOnlyList<(string Locale, string From, string? To)> GetRedirects()
+    {
+        using var connection = database.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT locale, from_slug, to_slug FROM redirects ORDER BY locale, from_slug";
+        var redirects = new List<(string, string, string?)>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read()) redirects.Add((reader.GetString(0), reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)));
+        return redirects;
+    }
+
     /// <summary>Locales that have a page with this slug, in configured order.</summary>
     public IReadOnlyList<string> TranslationsOf(string slug)
     {

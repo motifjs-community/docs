@@ -10,32 +10,37 @@ public static class Sitemap
     private static readonly XNamespace Ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
     private static readonly XNamespace Xhtml = "http://www.w3.org/1999/xhtml";
 
-    // App pages that are not docs articles.
-    private static readonly string[] StaticRoutes = ["/", "/docs", "/about"];
+    /// <summary>App pages that are not docs articles.</summary>
+    public static readonly string[] StaticRoutes = ["/", "/docs", "/about"];
 
     public static void MapSitemap(this IEndpointRouteBuilder app)
     {
         app.MapGet("/sitemap.xml", (HttpContext context, DocsStore store, SiteLinks links) =>
         {
-            var baseUrl = links.BaseUrl(context);
-            var urls = new List<XElement>();
-
-            foreach (var route in StaticRoutes)
-                urls.AddRange(Entries(baseUrl, links, route, links.Locales.ToDictionary(l => l, _ => (DateTimeOffset?)null)));
-
-            foreach (var (slug, updated) in store.GetSitemap())
-                urls.AddRange(Entries(baseUrl, links, $"/docs/{slug}", updated.ToDictionary(u => u.Key, u => (DateTimeOffset?)u.Value)));
-
-            var document = new XDocument(new XDeclaration("1.0", "utf-8", null),
-                new XElement(Ns + "urlset", new XAttribute(XNamespace.Xmlns + "xhtml", Xhtml), urls));
-
             context.Response.Headers.CacheControl = "public, max-age=3600";
-            return Results.Text(document.Declaration + "\n" + document.Root, "application/xml", Encoding.UTF8);
+            return Results.Text(Build(links.BaseUrl(context), store, links), "application/xml", Encoding.UTF8);
         });
 
         app.MapGet("/robots.txt", (HttpContext context, SiteLinks links) =>
-            Results.Text($"User-agent: *\nAllow: /\n\nSitemap: {links.BaseUrl(context)}/sitemap.xml\n", "text/plain", Encoding.UTF8));
+            Results.Text(Robots(links.BaseUrl(context)), "text/plain", Encoding.UTF8));
     }
+
+    public static string Build(string baseUrl, DocsStore store, SiteLinks links)
+    {
+        var urls = new List<XElement>();
+
+        foreach (var route in StaticRoutes)
+            urls.AddRange(Entries(baseUrl, links, route, links.Locales.ToDictionary(l => l, _ => (DateTimeOffset?)null)));
+
+        foreach (var (slug, updated) in store.GetSitemap())
+            urls.AddRange(Entries(baseUrl, links, $"/docs/{slug}", updated.ToDictionary(u => u.Key, u => (DateTimeOffset?)u.Value)));
+
+        var document = new XDocument(new XDeclaration("1.0", "utf-8", null),
+            new XElement(Ns + "urlset", new XAttribute(XNamespace.Xmlns + "xhtml", Xhtml), urls));
+        return document.Declaration + "\n" + document.Root;
+    }
+
+    public static string Robots(string baseUrl) => $"User-agent: *\nAllow: /\n\nSitemap: {baseUrl}/sitemap.xml\n";
 
     /// <summary>One &lt;url&gt; per language the route exists in, each listing all of them as alternates.</summary>
     private static IEnumerable<XElement> Entries(string baseUrl, SiteLinks links, string route, IReadOnlyDictionary<string, DateTimeOffset?> updatedByLocale)

@@ -7,6 +7,11 @@ import './style.css';
 // The server adds a plain copy of docs articles for crawlers; the app renders its own.
 document.getElementById('prerender')?.remove();
 
+// Static hosts may answer "/docs" with "/docs/"; the routes have no trailing slash.
+if (location.pathname.length > 1 && location.pathname.endsWith('/')) {
+    history.replaceState(history.state, '', location.pathname.replace(/\/+$/, '') + location.search + location.hash);
+}
+
 // The bare root opens in the language the visitor chose before (or their browser's).
 if (location.pathname === '/' && preferredLocale() !== defaultLocale) {
     history.replaceState(history.state, '', localePath('/', preferredLocale()) + location.search + location.hash);

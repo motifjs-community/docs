@@ -1,11 +1,12 @@
 import type { RouteItem } from '@motifx/core';
 import DocsArticlePage from './pages/DocsArticlePage';
+import { defaultLocale, supportedLocales } from './i18n';
 
 export const routes: RouteItem[] = [
     {
         path: '/',
-        // Turkish pages live under /tr. Same routes, so switching language keeps every component.
-        alias: '/tr',
+        // Other languages live under their code (/tr). Same routes, so switching language keeps every component.
+        alias: supportedLocales.filter(({ code }) => code !== defaultLocale).map(({ code }) => `/${code}`),
         control: () => import('./layout/mainlayout'),
         childs: [
             {

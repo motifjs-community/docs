@@ -17,6 +17,17 @@ if (args.FirstOrDefault() == "sync")
     return sync.Run();
 }
 
+// `dotnet run -- export [folder]` writes the site as static files (default: dist/ in the repository root).
+if (args.FirstOrDefault() == "export")
+{
+    var outDir = FromContentRoot(args.Skip(1).FirstOrDefault(a => !a.StartsWith("--")) ?? "../../dist");
+    var store = new DocsStore(docsDatabase, docsOptions);
+    var links = new SiteLinks(docsOptions, builder.Configuration, site);
+    var export = new StaticExport(store, links, new PageShell(store, links, site),
+        Path.Combine(builder.Environment.ContentRootPath, "wwwroot"), Console.Out);
+    return export.Run(outDir);
+}
+
 var hadDatabase = File.Exists(docsDatabase.Path);
 using (var connection = docsDatabase.Open())
 {
@@ -30,6 +41,7 @@ builder.Services.AddSingleton(docsOptions);
 builder.Services.AddSingleton(docsDatabase);
 builder.Services.AddSingleton<DocsStore>();
 builder.Services.AddSingleton<SiteLinks>();
+builder.Services.AddSingleton<PageShell>();
 builder.Services.AddSingleton<IndexPage>();
 
 var app = builder.Build();
