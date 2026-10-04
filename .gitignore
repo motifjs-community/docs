@@ -10,6 +10,7 @@ Thumbs.db
 server/**/bin/
 server/**/obj/
 server/**/App_Data/
+server/**/wwwroot/
 *.db
 *.db-shm
 *.db-wal

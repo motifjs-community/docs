@@ -1,4 +1,5 @@
 using MotifJs.Docs.Docs;
+using MotifJs.Docs.Site;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,12 +15,27 @@ if (args.FirstOrDefault() == "sync")
     return sync.Run();
 }
 
+using (var connection = docsDatabase.Open()) DocsDatabase.EnsureSchema(connection);
+
 builder.Services.AddSingleton(docsOptions);
 builder.Services.AddSingleton(docsDatabase);
+builder.Services.AddSingleton<DocsStore>();
+builder.Services.AddSingleton<IndexPage>();
 
 var app = builder.Build();
 
-app.MapGet("/", () => "MotifJS docs server");
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = file =>
+    {
+        // Vite puts a content hash in every file name under /assets, so those never change.
+        if (file.Context.Request.Path.StartsWithSegments("/assets"))
+            file.Context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+    }
+});
+
+app.MapDocsApi();
+app.MapFallback((HttpContext context, IndexPage page) => page.Handle(context));
 
 app.Run();
 return 0;
