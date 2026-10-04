@@ -1,0 +1,46 @@
+[
+  {
+    "id": "start",
+    "title": {
+      "en": "Get started",
+      "tr": "Başlangıç"
+    },
+    "description": {
+      "en": "Install MotifJS and create the first application pieces.",
+      "tr": "MotifJS’i kurun ve uygulamanın ilk parçalarını oluşturun."
+    }
+  },
+  {
+    "id": "ui-state",
+    "title": {
+      "en": "UI and state",
+      "tr": "Arayüz ve state"
+    },
+    "description": {
+      "en": "Connect state to views, events, and forms.",
+      "tr": "State’i görünümlere, olaylara ve formlara bağlayın."
+    }
+  },
+  {
+    "id": "application",
+    "title": {
+      "en": "Application structure",
+      "tr": "Uygulama yapısı"
+    },
+    "description": {
+      "en": "Organize navigation, lifecycles, services, and resources.",
+      "tr": "Gezinme, lifecycle, servis ve kaynakları düzenleyin."
+    }
+  },
+  {
+    "id": "reference",
+    "title": {
+      "en": "Reference and integrations",
+      "tr": "Referans ve entegrasyonlar"
+    },
+    "description": {
+      "en": "Look up APIs and connect existing libraries.",
+      "tr": "API’lere bakın ve mevcut kütüphaneleri bağlayın."
+    }
+  }
+]
