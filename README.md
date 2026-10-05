@@ -18,6 +18,13 @@ npm run server      # API on http://localhost:5125
 npm run dev         # site with hot reload; /api is proxied to the server
 ```
 
+## llms.txt
+
+`npm run llms:sync` writes `public/llms.txt` (an index of the agent skill and the docs pages) and
+`public/llms-full.txt` (the complete skill in one file) from `content/docs` and the motifjs skill. The skill
+is read from a sibling checkout of `motifjsdev/skills` (or the folder in `MOTIF_SKILL_DIR`), otherwise
+from GitHub. Run it after the skill or the docs change; `npm run build` copies both files to the site root.
+
 ## Writing docs
 
 The docs are built from `content/docs` alone: one folder per language listed in `site.config.json`

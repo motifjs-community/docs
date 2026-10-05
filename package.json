@@ -12,6 +12,7 @@
     "preview":"vite preview",
     "server": "dotnet run --project server/MotifJs.Docs --no-launch-profile -- --urls http://localhost:5125",
     "docs:sync": "dotnet run --project server/MotifJs.Docs --no-launch-profile -- sync",
+    "llms:sync": "node scripts/llms.mjs",
     "release": "npm run build && npm run docs:sync && dotnet publish server/MotifJs.Docs -c Release -o publish",
     "export": "npm run build && npm run docs:sync && dotnet run --project server/MotifJs.Docs --no-launch-profile -- export"
   },

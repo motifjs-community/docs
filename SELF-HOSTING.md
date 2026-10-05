@@ -24,7 +24,7 @@ with its .NET server on Linux or Windows, or as static files on GitHub Pages and
 
 ```text
 site.config.json        name, address, logo, languages, links: the one file a fork edits
-public/                 static files: logo.svg, favicon.svg
+public/                 static files: logo.svg, favicon.svg, llms.txt, llms-full.txt
 src/                    the site, a MotifJS app built with Vite
   content/locales/      interface texts, one {code}.json per language
 content/docs/           the documentation: categories.json and one folder of .md files per language

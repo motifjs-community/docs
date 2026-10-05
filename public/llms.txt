@@ -1,0 +1,84 @@
+# MotifJS
+
+> MotifJS is a UI framework for JavaScript and TypeScript (JSX/TSX) for long-lived, state-heavy browser apps. There is **no virtual DOM, no diffing, no re-render loop and no SSR**. Components own real DOM nodes; the `@motifx/compiler` compiler turns JSX expressions into fine-grained *bindings* that patch only the text node / attribute / list slot that depends on the changed reactive field.
+
+MotifJS is not React, Vue, Solid or Angular, and no model has prior knowledge of it. The agent skill below
+is the canonical text for writing MotifJS code: read SKILL.md first, then the reference that matches the task.
+The complete skill in one file is at the end of this list.
+
+## Agent skill
+
+- [SKILL.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/SKILL.md): entry point, Thinking in Motif, minimal project, rules that prevent most bugs
+- [references/thinking-in-motif.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/thinking-in-motif.md): Design: component as object, model/view split, communication by scope, identity, rebuild vs fill, one page written both ways
+- [references/setup.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/setup.md): Build setup, file extensions, opt-out markers, tsconfig
+- [references/components.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/components.md): Component anatomy: constructor forms, props/childs, controls, refs, context, elementTag
+- [references/jsx-and-reactivity.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/jsx-and-reactivity.md): JSX expression forms, attributes, `x-*` props, reactive primitives, bindings API
+- [references/conditionals-lists-frames.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/conditionals-lists-frames.md): `x-wait`/`x-display`, `&&`, ternary, `.map`, `switch`, `Frame`, `Lazy`, `Transport` slots
+- [references/events-and-forms.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/events-and-forms.md): DOM/component/app events, forms, two-way binding
+- [references/lifecycle-and-dispose.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/lifecycle-and-dispose.md): Lifecycle order, show/hide, isWait, dispose, memory rules, wrapping third-party libraries
+- [references/routing.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/routing.md): Routes, params, guards, `RouterView`, `RouterLink`, navigation
+- [references/di.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/di.md): DI: ServiceCollection, `@Injectable`, `inject`, `getService`
+- [references/styling-and-transitions.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/styling-and-transitions.md): class/style helpers, CSS transitions, WAAPI
+- [references/virtualization.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/virtualization.md): `Virtualization` for big lists
+- [references/mobile-and-electron.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/mobile-and-electron.md): Phone-style page stack, swipe back, app lifecycle, Electron and `file://` apps
+- [references/testing.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/testing.md): Writing Jest/jsdom tests for MotifJS components
+- [references/api-cheatsheet.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/api-cheatsheet.md): Compact export list with signatures (incl. `Query`, error handling, `@motifx/core/devtools`)
+- [references/pitfalls.md](https://raw.githubusercontent.com/motifjsdev/skills/main/skills/motifjs/references/pitfalls.md): React-habit mistakes and known compiler/runtime quirks
+- [Skill repository](https://github.com/motifjsdev/skills): install with `npx skills add motifjsdev/skills` or the Claude Code plugin marketplace
+
+## Documentation
+
+### Get started
+
+- [MotifJS Documentation](https://motifjs.com/docs/index): What MotifJS does, the index of sections, and a quick look through a counter component.
+- [Getting Started](https://motifjs.com/docs/getting-started): Set up the build, create a component and mount the application.
+
+### Core concepts
+
+- [Components](https://motifjs.com/docs/components): Class, function and Options API components; root element, props, childs, controls, content transport and ref.
+- [JSX and Templates](https://motifjs.com/docs/jsx): JSX rules, reactive text and attributes, spread, class/style, x- directives, compile-time diagnostics and explain.
+- [Reactivity](https://motifjs.com/docs/reactivity): reactive, createSignal, createComputed, createLazyComputed, effect, untracked and how bindings meet the DOM.
+- [Conditional Rendering and Lists](https://motifjs.com/docs/conditionals-and-lists): x-wait/x-display, && and the ternary operator, .map lists, key and item identity, switch and the binding API.
+- [Events](https://motifjs.com/docs/events): DOM events and modifiers, motif.on/off/trigger component events, lifecycle events and the application event bus.
+- [Forms and Two-Way Binding](https://motifjs.com/docs/forms): One-way value+oninput, two-way binding with bindings.model and x-model, select, form submission and a validation pattern.
+- [Lifecycle](https://motifjs.com/docs/lifecycle): Hook order, hooks as class methods and JSX props, initializeComponent, visibility, waiting, disposal and the application lifecycle.
+
+### Application structure
+
+- [Routing](https://motifjs.com/docs/routing): RouteItem definition, redirect/alias, route hooks, parameters, useRouter modes, scrollMemory, RouterView, links, programmatic navigation, guards, stack navigation and Lazy.
+- [Dependency Injection](https://motifjs.com/docs/dependency-injection): Lifetimes, scoped handles, ServiceCollection registration forms, ServiceProvider resolution, @Injectable, inject, deps and service disposal.
+- [Styling and Transitions](https://motifjs.com/docs/styling-and-transitions): class/style/attr helpers, inline <style>, the CSS class based transition prop, WAAPI keyframe transitions, visibility and the enter/leave mode.
+- [Memory Management and Dispose](https://motifjs.com/docs/memory-and-dispose): What is cleaned automatically, motif.register/setDisposable, dispose methods, detach/silentDetach/silentUnlink, DisposableStore, using/doWork, leak monitoring and live component counting.
+- [Error Handling](https://motifjs.com/docs/error-handling): The distinction between thrown, reported and warned errors; MotifError, errorHandler, setUnexpectedErrorHandler, the safeCall helpers and Emitter.
+- [Resilience](https://motifjs.com/docs/resilience): Retry, timeout, circuit breaker, bulkhead, rate limiter and fallback policies through the Resilience.create chain; ordering, state and error codes.
+
+### Guides
+
+- [Wrapping Third-Party Libraries](https://motifjs.com/docs/wrapping-libraries): The rules for turning libraries that manage their own DOM into components; onMounted setup, setDisposable cleanup, untracked writes, DOM ownership conflicts, the root element and the single-copy rule.
+- [Publishing an npm Library for MotifJS](https://motifjs.com/docs/publishing-libraries): Preparing an npm package containing MotifJS components, services or wrappers; package shape, build, types, CSS, the prop contract, testing and the release checklist.
+
+### Reference
+
+- [API Reference](https://motifjs.com/docs/api-reference): A quick reference of the symbols exported from the @motifx/core package and the table of MJX error/warning codes.
+- [Collection Queries (Query)](https://motifjs.com/docs/query): LINQ-style where/select/orderBy/groupBy chains with Query.from, the result-producing methods and use with reactivity.
+- [Collections](https://motifjs.com/docs/collections): The API and behaviour of the List, Dictionary, NameValuePair and LinkedList structures that ship with @motifx/core.
+
+### Advanced
+
+- [Frame](https://motifjs.com/docs/frame): A container holding one changing content; content changes with navigate, timing, leave transitions and the places where the framework sets up a Frame.
+- [Lazy](https://motifjs.com/docs/lazy): Content loaded through a dynamic import or any Promise; the loading flow, options, retry, cancellation and error reporting.
+- [Transport and TransportTo](https://motifjs.com/docs/transport): Showing content in a slot outside its own tree; the Transport slot, the TransportTo sender, the replace/merge modes and Transporter for programmatic moves.
+- [ContentBody and ContentBlock](https://motifjs.com/docs/content-body): A body filled by several blocks together; the ContentBody body, ContentBlock pieces, accumulation, disposal and the difference from Transport.
+- [Virtualization](https://motifjs.com/docs/virtualization): The Virtualization component; props reference, the dataRequest contract, templates, autoRefresh, filtering, the rendering model and methods.
+
+## Source and packages
+
+- [Source and issues](https://github.com/motifjsdev/motifjs)
+- [@motifx/core on npm](https://www.npmjs.com/package/@motifx/core): runtime
+- [@motifx/compiler on npm](https://www.npmjs.com/package/@motifx/compiler): JSX compiler, Vite plugin, motif-lint and motif-explain
+- [Community projects](https://github.com/motifjs-community): reference apps and wrapper packages
+
+## Optional
+
+- [llms-full.txt](https://motifjs.com/llms-full.txt): the complete agent skill (SKILL.md and every reference) in one file
+- [Türkçe documentation](https://motifjs.com/tr/docs)
