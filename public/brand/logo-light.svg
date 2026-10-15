@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 236 236" role="img" aria-label="MotifJS">
+  <path class="mark-ink" fill="#1d1c1a" d="m236 118-52 52-28-28 24-24-24-24 28-28Z"/>
+  <path class="mark-ink" fill="#1d1c1a" d="m118 236-52-52 28-28 24 24 24-24 28 28Z"/>
+  <path class="mark-ink" fill="#1d1c1a" d="M0 118 52 66l28 28-24 24 24 24-28 28Z"/>
+  <path class="mark-accent" fill="#c24523" d="M118 0 170 52 142 80 118 56 94 80 66 52Z"/>
+</svg>

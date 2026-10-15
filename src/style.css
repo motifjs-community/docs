@@ -127,7 +127,8 @@ html.header-hidden .site-header { transform: translateY(-100%); }
     fill: var(--color-brand-mark);
 }
 
-/* Wordmark in the brand kit typography: "js" sits a hair apart (dx 8 at 142px) in the accent. */
+/* Wordmark in the brand kit typography: "JS" continues "Motif" with no gap, in the muted text colour;
+   the accent lives in the mark (its top chevron, `.mark-accent` in logo.svg). */
 .brand-name {
     color: var(--color-brand-wordmark);
     font-family: var(--font-brand);
@@ -137,8 +138,7 @@ html.header-hidden .site-header { transform: translateY(-100%); }
 }
 
 .brand-name span {
-    margin-left: 0.056em;
-    color: var(--color-brand-accent);
+    color: var(--color-text-muted);
 }
 
 .primary-nav {
@@ -2165,6 +2165,10 @@ body {
     width: 76px;
     height: 76px;
     fill: color-mix(in srgb, var(--color-brand-mark) 16%, transparent);
+}
+
+.community-mark .brand-mark .mark-accent {
+    fill: inherit;
 }
 
 .community-mark i {
