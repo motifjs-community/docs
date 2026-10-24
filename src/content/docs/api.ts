@@ -3,7 +3,7 @@ import { localeOfPath, type LocaleCode } from '../../i18n';
 export interface DocLink { slug: string; title: string }
 export interface DocHeading { id: string; text: string; level: number }
 export interface NavPage { slug: string; title: string; description: string }
-export interface NavCategory { id: string; title: string; description: string; pages: NavPage[] }
+export interface NavCategory { id: string; title: string; pages: NavPage[] }
 
 export interface DocPage {
     slug: string;

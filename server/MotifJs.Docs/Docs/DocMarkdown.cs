@@ -21,6 +21,7 @@ public sealed class DocFrontMatter
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
     public string Category { get; set; } = "";
+    public int CategoryOrder { get; set; }
     public int Order { get; set; }
     /// <summary>Old addresses that should lead to this page from now on.</summary>
     public List<string> RedirectFrom { get; set; } = [];
@@ -202,7 +203,7 @@ public static class DocMarkdown
     private static DocFrontMatter ReadFrontMatter(MarkdownDocument document, string file)
     {
         if (document.FirstOrDefault() is not YamlFrontMatterBlock block)
-            throw new DocContentException(file, 1, "missing front matter (title, description, category, order)");
+            throw new DocContentException(file, 1, "missing front matter (title, description, category, categoryOrder, order)");
 
         DocFrontMatter meta;
         try
@@ -217,6 +218,8 @@ public static class DocMarkdown
 
         if (string.IsNullOrWhiteSpace(meta.Title)) throw new DocContentException(file, 1, "front matter needs a title");
         if (string.IsNullOrWhiteSpace(meta.Category)) throw new DocContentException(file, 1, "front matter needs a category");
+        if (meta.CategoryOrder < 1) throw new DocContentException(file, 1, "front matter needs a categoryOrder (1 or more)");
+        meta.Category = meta.Category.Trim();
         return meta;
     }
 
@@ -225,9 +228,9 @@ public static class DocMarkdown
         var message = error.InnerException?.Message ?? error.Message;
 
         if (Regex.Match(message, "Property '(.+?)' not found") is { Success: true } unknown)
-            return $"unknown field '{unknown.Groups[1].Value}' (use slug, title, description, category, order, redirectFrom)";
+            return $"unknown field '{unknown.Groups[1].Value}' (use slug, title, description, category, categoryOrder, order, redirectFrom)";
         if (message.Contains("deserialize the node", StringComparison.Ordinal) || error.InnerException is FormatException)
-            return "a value has the wrong type (title, description and category are text, order is a number)";
+            return "a value has the wrong type (title, description and category are text, categoryOrder and order are numbers)";
 
         // YamlDotNet prefixes positions we already report; keep the readable part.
         return Regex.Replace(message, @"^\(Line: .*?\): ", "");

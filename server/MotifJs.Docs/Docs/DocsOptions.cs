@@ -4,7 +4,7 @@ public sealed class DocsOptions
 {
     public const string Section = "Docs";
 
-    /// <summary>Folder with categories.json and one sub-folder per locale. Relative paths start at the content root.</summary>
+    /// <summary>Folder with one sub-folder per locale. Relative paths start at the content root.</summary>
     public string ContentPath { get; set; } = "../../content/docs";
 
     /// <summary>SQLite file the site reads from. Relative paths start at the content root.</summary>

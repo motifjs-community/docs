@@ -37,17 +37,16 @@ const readSkill = async (file) => {
 };
 
 const docs = () => {
-  const categories = JSON.parse(readFileSync(join(docsDir, 'categories.json'), 'utf8'));
   const pages = walk(join(docsDir, locale)).map((path) => {
     const { meta } = frontMatter(readFileSync(path, 'utf8'));
     const slug = meta.slug ?? path.replace(/\\/g, '/').split('/').pop().replace(/\.md$/, '');
-    return { slug, title: meta.title ?? slug, description: meta.description ?? '', category: meta.category ?? '', order: Number(meta.order ?? 0) };
+    return { slug, title: meta.title ?? slug, description: meta.description ?? '', category: (meta.category ?? '').trim(), categoryOrder: Number(meta.categoryOrder ?? 0), order: Number(meta.order ?? 0) };
   });
+  const categories = [...new Map(pages.map((p) => [p.category, p.categoryOrder])).entries()].sort((a, b) => a[1] - b[1]);
   const lines = [];
-  for (const category of categories) {
-    const own = pages.filter((p) => p.category === category.id).sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
-    if (own.length === 0) continue;
-    lines.push(`### ${category.title[locale] ?? category.id}`, '');
+  for (const [category] of categories) {
+    const own = pages.filter((p) => p.category === category).sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
+    lines.push(`### ${category}`, '');
     for (const p of own) lines.push(`- [${p.title}](${siteUrl}/docs/${p.slug})${p.description ? `: ${p.description}` : ''}`);
     lines.push('');
   }

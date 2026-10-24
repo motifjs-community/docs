@@ -6,7 +6,7 @@ namespace MotifJs.Docs.Docs;
 public sealed class DocsDatabase(string path)
 {
     // Bump when the schema changes; the sync builds a new file anyway, the site only needs to know it is stale.
-    public const int SchemaVersion = 2;
+    public const int SchemaVersion = 3;
 
     public string Path { get; } = path;
 
@@ -31,7 +31,6 @@ public sealed class DocsDatabase(string path)
                 id          TEXT NOT NULL,
                 locale      TEXT NOT NULL,
                 title       TEXT NOT NULL,
-                description TEXT NOT NULL,
                 sort        INTEGER NOT NULL,
                 PRIMARY KEY (id, locale)
             );

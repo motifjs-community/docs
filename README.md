@@ -27,9 +27,9 @@ from GitHub. Run it after the skill or the docs change; `npm run build` copies b
 
 ## Writing docs
 
-The docs are built from `content/docs` alone: one folder per language listed in `site.config.json`
-(sub-folders allowed, any file names), and
-`content/docs/categories.json` for the categories, their order and their title in each language.
+The docs are built from the markdown files in `content/docs` alone: one folder per language listed in
+`site.config.json` (sub-folders allowed, any file names). Nothing else describes them: the categories, the
+sidebar, the docs home cards and `llms.txt` all come from the files' front matter.
 Every language folder stands on its own: languages do not need the same pages.
 
 ```md
@@ -37,7 +37,8 @@ Every language folder stands on its own: languages do not need the same pages.
 slug: routing
 title: Routing
 description: Define nested routes, layouts, parameters, and navigation.
-category: application
+category: Routing
+categoryOrder: 4
 order: 2
 redirectFrom: [router]
 ---
@@ -54,7 +55,9 @@ See [the lifecycle](./08-lifecycle.md#hooks).
 - Link to other pages of the same language by their file, as you would between markdown files: the link
   works in an editor or on GitHub, and the sync turns it into a site link. A link to a missing file stops
   the sync; a `#section` the target page does not have is reported as a warning.
-- A category needs a title for every language that uses it.
+- `category` is the category title as readers see it in that language; pages with the same title form one
+  category. `categoryOrder` places the category among the others (from 1), and every page of a category
+  gives the same number; two categories cannot share one. `order` places the page inside its category.
 - The title comes from front matter, so sections start at `##`. `{#id}` keeps an anchor the same in every
   language, which links from other pages rely on.
 - Code fences take `file=` for the label. Fences with the same `file=` in a row form one example; give each

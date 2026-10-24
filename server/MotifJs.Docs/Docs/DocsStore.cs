@@ -5,7 +5,7 @@ namespace MotifJs.Docs.Docs;
 
 public sealed record DocLink(string Slug, string Title);
 public sealed record NavPage(string Slug, string Title, string Description);
-public sealed record NavCategory(string Id, string Title, string Description, IReadOnlyList<NavPage> Pages);
+public sealed record NavCategory(string Id, string Title, IReadOnlyList<NavPage> Pages);
 public sealed record DocCategoryRef(string Id, string Title);
 
 public sealed record DocPageResult(
@@ -26,7 +26,7 @@ public sealed record DocPageResult(
 /// </summary>
 public sealed class DocsStore(DocsDatabase database, DocsOptions options)
 {
-    private sealed record CategoryRow(string Id, string Title, string Description);
+    private sealed record CategoryRow(string Id, string Title);
     private sealed record PageRow(string Slug, string Locale, string Category, string Title, string Description, int Sort, DateTimeOffset UpdatedAt);
 
     public IReadOnlyList<string> Locales => options.Locales;
@@ -42,7 +42,7 @@ public sealed class DocsStore(DocsDatabase database, DocsOptions options)
         var pages = ReadPageRows(connection, locale);
 
         return ReadCategories(connection, locale)
-            .Select(c => new NavCategory(c.Id, c.Title, c.Description,
+            .Select(c => new NavCategory(c.Id, c.Title,
                 pages.Where(p => p.Category == c.Id).Select(p => new NavPage(p.Slug, p.Title, p.Description)).ToList()))
             .Where(c => c.Pages.Count > 0)
             .ToList();
@@ -172,12 +172,12 @@ public sealed class DocsStore(DocsDatabase database, DocsOptions options)
     private static List<CategoryRow> ReadCategories(SqliteConnection connection, string locale)
     {
         using var command = connection.CreateCommand();
-        command.CommandText = "SELECT id, title, description FROM categories WHERE locale = $locale ORDER BY sort";
+        command.CommandText = "SELECT id, title FROM categories WHERE locale = $locale ORDER BY sort";
         command.Parameters.AddWithValue("$locale", locale);
 
         var categories = new List<CategoryRow>();
         using var reader = command.ExecuteReader();
-        while (reader.Read()) categories.Add(new CategoryRow(reader.GetString(0), reader.GetString(1), reader.GetString(2)));
+        while (reader.Read()) categories.Add(new CategoryRow(reader.GetString(0), reader.GetString(1)));
         return categories;
     }
 }

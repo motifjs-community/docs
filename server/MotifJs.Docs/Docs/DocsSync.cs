@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -17,7 +18,7 @@ public sealed partial class DocsSync(DocsOptions options, CodeOptions codeOption
     // Part of every page's hash, so a rendering change reports pages as updated.
     private const int RenderVersion = 2;
 
-    private sealed record CategoryFile(string Id, Dictionary<string, string>? Title, Dictionary<string, string>? Description);
+    private sealed record CategoryRow(string Id, string Locale, string Title, int Sort);
     private sealed record SourceFile(string Name, string FullPath, string Locale, string Slug, string Source, ParsedDoc Parsed);
     private sealed record PageRow(string Slug, string Locale, string SourcePath, RenderedDoc Doc, string Hash);
     private sealed record Redirect(string Locale, string From, string? To);
@@ -33,8 +34,8 @@ public sealed partial class DocsSync(DocsOptions options, CodeOptions codeOption
     {
         var errors = new List<string>();
         var warnings = new List<string>();
-        var categories = ReadCategories(errors);
-        var pages = ReadPages(categories, errors, warnings);
+        var pages = ReadPages(errors, warnings);
+        var categories = ReadCategories(pages, errors);
 
         if (errors.Count > 0)
         {
@@ -81,36 +82,33 @@ public sealed partial class DocsSync(DocsOptions options, CodeOptions codeOption
     private string Address(string locale, string? slug) =>
         (locale == options.DefaultLocale ? "" : $"/{locale}") + (slug is null ? "/docs" : $"/docs/{slug}");
 
-    private List<CategoryFile> ReadCategories(List<string> errors)
+    private static List<CategoryRow> ReadCategories(List<PageRow> pages, List<string> errors)
     {
-        var path = Path.Combine(contentPath, "categories.json");
-        if (!File.Exists(path))
+        var categories = new List<CategoryRow>();
+        foreach (var language in pages.GroupBy(p => p.Locale))
         {
-            errors.Add($"categories.json not found in {Path.GetFullPath(contentPath)}");
-            return [];
-        }
+            var own = new List<CategoryRow>();
+            foreach (var category in language.GroupBy(p => p.Doc.Meta.Category))
+            {
+                var orders = category.GroupBy(p => p.Doc.Meta.CategoryOrder).OrderBy(o => o.Key).ToList();
+                if (orders.Count > 1)
+                {
+                    errors.Add($"category '{category.Key}' ({language.Key}) has more than one categoryOrder: " +
+                        string.Join(", ", orders.Select(o => $"{o.Key} in {o.First().SourcePath}{(o.Count() > 1 ? $" and {o.Count() - 1} more" : "")}")));
+                    continue;
+                }
+                own.Add(new CategoryRow(orders[0].Key.ToString(CultureInfo.InvariantCulture), language.Key, category.Key, orders[0].Key));
+            }
 
-        List<CategoryFile>? categories;
-        try
-        {
-            categories = JsonSerializer.Deserialize<List<CategoryFile>>(File.ReadAllText(path), new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        }
-        catch (JsonException error)
-        {
-            errors.Add($"categories.json:{(error.LineNumber ?? 0) + 1}: {error.Message}");
-            return [];
-        }
+            foreach (var clash in own.GroupBy(c => c.Sort).Where(g => g.Count() > 1))
+                errors.Add($"categoryOrder {clash.Key} ({language.Key}) is given to more than one category: {string.Join(", ", clash.Select(c => $"'{c.Title}'"))}");
 
-        categories ??= [];
-        foreach (var category in categories.Where(c => string.IsNullOrWhiteSpace(c.Id)))
-            errors.Add("categories.json: a category has no id");
-        foreach (var duplicate in categories.GroupBy(c => c.Id).Where(g => g.Count() > 1))
-            errors.Add($"categories.json: category '{duplicate.Key}' is listed twice");
-
+            categories.AddRange(own.OrderBy(c => c.Sort));
+        }
         return categories;
     }
 
-    private List<PageRow> ReadPages(List<CategoryFile> categories, List<string> errors, List<string> warnings)
+    private List<PageRow> ReadPages(List<string> errors, List<string> warnings)
     {
         if (Directory.Exists(contentPath))
         {
@@ -138,12 +136,6 @@ public sealed partial class DocsSync(DocsOptions options, CodeOptions codeOption
                         errors.Add($"{name}:1: '{slug}' cannot be an address; set `slug:` in front matter (lowercase letters, digits and dashes)");
                         continue;
                     }
-
-                    var category = categories.FirstOrDefault(c => c.Id == parsed.Meta.Category);
-                    if (category is null)
-                        errors.Add($"{name}:1: category '{parsed.Meta.Category}' is not in categories.json");
-                    else if (category.Title?.ContainsKey(locale) != true)
-                        errors.Add($"{name}:1: category '{category.Id}' has no {locale} title in categories.json");
 
                     files.Add(new SourceFile(name, Path.GetFullPath(path), locale, slug, source, parsed));
                 }
@@ -285,17 +277,13 @@ public sealed partial class DocsSync(DocsOptions options, CodeOptions codeOption
             .ToList();
     }
 
-    private static void WriteCategories(SqliteConnection connection, List<CategoryFile> categories)
+    private static void WriteCategories(SqliteConnection connection, List<CategoryRow> categories)
     {
-        for (var i = 0; i < categories.Count; i++)
+        foreach (var category in categories)
         {
-            foreach (var (locale, title) in categories[i].Title ?? [])
-            {
-                Execute(connection,
-                    "INSERT INTO categories (id, locale, title, description, sort) VALUES ($id, $locale, $title, $description, $sort)",
-                    ("$id", categories[i].Id), ("$locale", locale), ("$title", title),
-                    ("$description", categories[i].Description?.GetValueOrDefault(locale) ?? ""), ("$sort", i));
-            }
+            Execute(connection,
+                "INSERT INTO categories (id, locale, title, sort) VALUES ($id, $locale, $title, $sort)",
+                ("$id", category.Id), ("$locale", category.Locale), ("$title", category.Title), ("$sort", category.Sort));
         }
     }
 
@@ -319,7 +307,7 @@ public sealed partial class DocsSync(DocsOptions options, CodeOptions codeOption
                 INSERT INTO pages (slug, locale, category, title, description, sort, html, headings, source_hash, updated_at, source_path)
                 VALUES ($slug, $locale, $category, $title, $description, $sort, $html, $headings, $hash, $updated, $path)
                 """,
-                ("$slug", page.Slug), ("$locale", page.Locale), ("$category", page.Doc.Meta.Category),
+                ("$slug", page.Slug), ("$locale", page.Locale), ("$category", page.Doc.Meta.CategoryOrder.ToString(CultureInfo.InvariantCulture)),
                 ("$title", page.Doc.Meta.Title), ("$description", page.Doc.Meta.Description), ("$sort", page.Doc.Meta.Order),
                 ("$html", page.Doc.Html), ("$headings", JsonSerializer.Serialize(page.Doc.Headings, JsonSerializerOptions.Web)),
                 ("$hash", page.Hash), ("$updated", updatedAt), ("$path", page.SourcePath));
