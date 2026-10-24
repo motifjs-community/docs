@@ -1,7 +1,7 @@
 import { localePath, localeState, t } from '../i18n';
 import type { DocLink } from '../content/docs/api';
 import { docsState, firstDocSlug } from '../content/docs/state';
-import { articleSegments, pickVariant, type ArticleSegment } from '../content/docs/segments';
+import { articleSegments, pickVariant, variantFits, type ArticleSegment } from '../content/docs/segments';
 import { codeChoices } from '../preferences/code-style';
 import { CodeBlock } from '../components/CodeBlock';
 
@@ -10,6 +10,9 @@ function Segment(props: { segment: ArticleSegment }) {
     const segment = props.segment;
     if (segment.kind === 'code') {
         return <CodeBlock file={() => pickVariant(segment.variants, codeChoices)?.file || segment.file} source={() => pickVariant(segment.variants, codeChoices)?.code ?? ''} />;
+    }
+    if (segment.kind === 'variant') {
+        return <div class="docs-variant" x-display={() => variantFits(segment.variant, codeChoices)}>{segment.segments.map((part) => <Segment key={part.key} segment={part} />)}</div>;
     }
     return <div class="docs-prose" onbuilt={(c) => (c.element as HTMLElement).innerHTML = segment.html} />;
 }

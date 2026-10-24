@@ -11,7 +11,8 @@ export interface CodeVariant {
 
 export type ArticleSegment =
     | { kind: 'html'; key: string; html: string }
-    | { kind: 'code'; key: string; file: string; variants: CodeVariant[] };
+    | { kind: 'code'; key: string; file: string; variants: CodeVariant[] }
+    | { kind: 'variant'; key: string; variant: string; segments: ArticleSegment[] };
 
 const cache = new Map<string, ArticleSegment[]>();
 
@@ -30,6 +31,12 @@ export function articleSegments(page: DocPage | null, readerLocale: LocaleCode):
     localizeLinks(template.content, readerLocale);
     wrapTables(template.content);
 
+    const segments = splitNodes(Array.from(template.content.childNodes), id);
+    cache.set(id, segments);
+    return segments;
+}
+
+function splitNodes(nodes: Node[], id: string): ArticleSegment[] {
     const segments: ArticleSegment[] = [];
     let prose = '';
     const flushProse = () => {
@@ -37,8 +44,12 @@ export function articleSegments(page: DocPage | null, readerLocale: LocaleCode):
         prose = '';
     };
 
-    for (const node of Array.from(template.content.childNodes)) {
-        if (node instanceof HTMLElement && node.classList.contains('doc-code')) {
+    for (const node of nodes) {
+        if (node instanceof HTMLElement && node.classList.contains('doc-variant')) {
+            flushProse();
+            const key = `${id}/${segments.length}`;
+            segments.push({ kind: 'variant', key, variant: node.dataset.variant ?? '', segments: splitNodes(Array.from(node.childNodes), key) });
+        } else if (node instanceof HTMLElement && node.classList.contains('doc-code')) {
             flushProse();
             const blocks = Array.from(node.querySelectorAll('pre'));
             segments.push({
@@ -57,8 +68,6 @@ export function articleSegments(page: DocPage | null, readerLocale: LocaleCode):
         }
     }
     flushProse();
-
-    cache.set(id, segments);
     return segments;
 }
 
@@ -107,4 +116,9 @@ export function pickVariant(variants: CodeVariant[], choices: Record<string, str
         }
     }
     return best ?? variants[0];
+}
+
+export function variantFits(variant: string, choices: Record<string, string>): boolean {
+    const chosen = new Set(Object.values(choices));
+    return variant.split(',').some((pattern) => pattern.split('/').every((id) => chosen.has(id)));
 }

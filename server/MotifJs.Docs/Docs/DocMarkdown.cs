@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Markdig;
 using Markdig.Extensions.AutoIdentifiers;
+using Markdig.Extensions.CustomContainers;
 using Markdig.Extensions.Yaml;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
@@ -54,14 +55,20 @@ public sealed class DocContentException(string file, int line, string message)
 public static class DocMarkdown
 {
 
-    private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
-        .UseYamlFrontMatter()
-        .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
-        .UsePipeTables()
-        .UseEmphasisExtras()
-        .UseAutoLinks()
-        .UseGenericAttributes() // keep last: lets a heading pin its anchor, e.g. "## Routing {#routing}"
-        .Build();
+    private static readonly MarkdownPipeline Pipeline = CreatePipeline();
+
+    private static MarkdownPipeline CreatePipeline()
+    {
+        var builder = new MarkdownPipelineBuilder()
+            .UseYamlFrontMatter()
+            .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
+            .UsePipeTables()
+            .UseEmphasisExtras()
+            .UseAutoLinks()
+            .UseGenericAttributes(); // keep last: lets a heading pin its anchor, e.g. "## Routing {#routing}"
+        builder.BlockParsers.AddIfNotAlready<CustomContainerParser>();
+        return builder.Build();
+    }
 
     private static readonly IDeserializer Yaml = new DeserializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
@@ -84,8 +91,20 @@ public static class DocMarkdown
         var renderer = new HtmlRenderer(writer);
         Pipeline.Setup(renderer);
 
+        var nested = document.Descendants<CustomContainer>().FirstOrDefault(box => box.Parent is not MarkdownDocument and not CustomContainer);
+        if (nested is not null)
+            throw new DocContentException(file, nested.Line + 1, "a ::: block starts at the left margin, not inside a list or a quote");
+
         var headings = new List<DocHeading>();
-        var blocks = document.ToList();
+        RenderBlocks(renderer, document, file, codeOptions, headings, null);
+
+        writer.Flush();
+        return new RenderedDoc(meta, writer.ToString(), headings, links);
+    }
+
+    private static void RenderBlocks(HtmlRenderer renderer, ContainerBlock container, string file, CodeOptions codeOptions, List<DocHeading> headings, string? variant)
+    {
+        var blocks = container.ToList();
 
         for (var i = 0; i < blocks.Count; i++)
         {
@@ -96,6 +115,9 @@ public static class DocMarkdown
 
                 case HeadingBlock { Level: 1 } heading:
                     throw new DocContentException(file, heading.Line + 1, "the page title comes from front matter; start sections at ##");
+
+                case HeadingBlock heading when variant is not null:
+                    throw new DocContentException(file, heading.Line + 1, $"a variant={variant} block holds no headings, so every reader gets the same sections and anchors");
 
                 case HeadingBlock { Level: 2 or 3 } heading:
                     headings.Add(new DocHeading(heading.GetAttributes().Id ?? "", PlainText(heading.Inline), heading.Level));
@@ -116,14 +138,40 @@ public static class DocMarkdown
                     WriteCodeGroup(renderer, group, file, codeOptions);
                     break;
 
+                case CustomContainer box:
+                    WriteVariantBlock(renderer, box, file, codeOptions, headings, variant);
+                    break;
+
                 default:
                     renderer.Render(blocks[i]);
                     break;
             }
         }
+    }
 
-        writer.Flush();
-        return new RenderedDoc(meta, writer.ToString(), headings, links);
+    private static void WriteVariantBlock(HtmlRenderer renderer, CustomContainer box, string file, CodeOptions codeOptions, List<DocHeading> headings, string? outer)
+    {
+        var line = box.Line + 1;
+        if (outer is not null) throw new DocContentException(file, line, "variant blocks do not nest");
+        if (box.ClosingFencedCharCount == 0) throw new DocContentException(file, line, "this ::: block is never closed; end it with a ::: line");
+
+        string? variant = null;
+        foreach (var part in $"{box.Info} {box.Arguments}".Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var pair = part.Split('=', 2);
+            if (pair[0] == "variant" && pair.Length == 2 && variant is null) variant = pair[1];
+            else throw new DocContentException(file, line, $"unknown ::: block option '{part}' (use variant=)");
+        }
+
+        if (variant is null) throw new DocContentException(file, line, "a ::: block needs a variant, e.g. ::: variant=imperative");
+        if (variant.Split(',').Select(codeOptions.Check).FirstOrDefault(problem => problem is not null) is { } problem)
+            throw new DocContentException(file, line, $"variant: {problem}");
+        if (box.Count == 0) throw new DocContentException(file, line, "this ::: block is empty");
+
+        renderer.EnsureLine();
+        renderer.Write("<div class=\"doc-variant\" data-variant=\"").WriteEscape(variant).WriteLine("\">");
+        RenderBlocks(renderer, box, file, codeOptions, headings, variant);
+        renderer.WriteLine("</div>");
     }
 
     /// <summary>Points links to other markdown files at their site address; anything else is left alone.</summary>

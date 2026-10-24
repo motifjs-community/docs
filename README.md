@@ -65,6 +65,11 @@ See [the lifecycle](./08-lifecycle.md#hooks).
   naming the most choices is shown. Fences with a `variant=` whose files differ only in extension
   (`Page.tsx`, `Page.ts`, `Page.jsx`, `Page.js`) also form one example, and each block is shown under its
   own file name.
+- Text that only some readers need goes between `::: variant=imperative` and `:::` lines, with the same
+  patterns a code fence takes (`variant=imperative/function`, `variant=class,options`). It is shown only
+  when the reader's choices fit, so the page must read the same without it. The block starts at the left
+  margin and holds text, lists, tables and code, but no headings, so every reader gets the same sections;
+  blocks do not nest.
 
 Run `npm run docs:sync` after editing. It checks every file first and changes nothing if one has a
 problem, printing the file and line. Otherwise it builds a new database from scratch and swaps it in; the
