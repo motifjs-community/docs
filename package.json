@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview":"vite preview",
+    "preview": "vite preview",
     "server": "dotnet run --project server/MotifJs.Docs --no-launch-profile -- --urls http://localhost:5125",
     "docs:sync": "dotnet run --project server/MotifJs.Docs --no-launch-profile -- sync",
     "llms:sync": "node scripts/llms.mjs",
@@ -17,10 +17,10 @@
     "export": "npm run build && npm run docs:sync && dotnet run --project server/MotifJs.Docs --no-launch-profile -- export"
   },
   "dependencies": {
-    "@motifx/core": "^1.0.1"
+    "@motifx/core": "^1.2.0-rc.19"
   },
   "devDependencies": {
-    "@motifx/compiler": "^1.0.1",
+    "@motifx/compiler": "^1.2.0-rc.19",
     "typescript": "^7.0.2",
     "vite": "^8.3.2"
   }
