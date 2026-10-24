@@ -46,8 +46,10 @@ public sealed class DocContentException(string file, int line, string message)
 /// Turns a docs markdown file into HTML in two steps: <see cref="Parse"/> reads it (front matter included),
 /// <see cref="Render"/> writes HTML once every file's address is known. Links between markdown files
 /// (<c>[x](./other.md#part)</c>) work in an editor as they are and become site links (<c>/docs/slug#part</c>).
-/// Consecutive code fences with the same <c>file=</c> become one example group; their <c>variant=</c> values let
-/// the site show the one that matches the reader's code choices (see <see cref="CodeOptions"/>).
+/// Consecutive code fences with the same <c>file=</c> become one example group, and so do consecutive fences with a
+/// <c>variant=</c> whose files differ only in extension (<c>Page.tsx</c>, <c>Page.ts</c>, <c>Page.jsx</c>, <c>Page.js</c>);
+/// their <c>variant=</c> values let the site show the one that matches the reader's code choices, under its own
+/// file name (see <see cref="CodeOptions"/>).
 /// </summary>
 public static class DocMarkdown
 {
@@ -106,7 +108,7 @@ public static class DocMarkdown
                         && i + 1 < blocks.Count
                         && blocks[i + 1] is FencedCodeBlock next
                         && CodeFence.Parse(next, file, codeOptions) is { } nextFence
-                        && nextFence.File == group[0].Fence.File)
+                        && SameExample(group[0].Fence, nextFence))
                     {
                         group.Add((next, nextFence));
                         i++;
@@ -215,11 +217,16 @@ public static class DocMarkdown
             renderer.Write("<pre");
             if (fence.Language is not null) renderer.Write(" data-lang=\"").WriteEscape(fence.Language).Write("\"");
             if (fence.Variant is not null) renderer.Write(" data-variant=\"").WriteEscape(fence.Variant).Write("\"");
+            if (fence.File is not null) renderer.Write(" data-file=\"").WriteEscape(fence.File).Write("\"");
             renderer.Write("><code>").WriteEscape(block.Lines.ToString()).WriteLine("</code></pre>");
         }
 
         renderer.WriteLine("</div>");
     }
+
+    private static bool SameExample(CodeFence first, CodeFence next) =>
+        next.File == first.File
+        || (first.Variant is not null && next.Variant is not null && Path.ChangeExtension(next.File!, null) == Path.ChangeExtension(first.File!, null));
 
     private static string PlainText(ContainerInline? inline)
     {

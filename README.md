@@ -59,10 +59,12 @@ See [the lifecycle](./08-lifecycle.md#hooks).
   language, which links from other pages rely on.
 - Code fences take `file=` for the label. Fences with the same `file=` in a row form one example; give each
   a `variant=` to follow the reader's code preference, made of the choices in `codeOptions`
-  (`site.config.json`): `declarative/class`, just `class` (both writing styles) or just `declarative` (all
-  component styles). Every combination needs an example; one block can cover several with a comma, e.g.
+  (`site.config.json`): `declarative/class/javascript`, `declarative/class` (both languages), just `class`
+  or just `declarative`. Every combination needs an example; one block can cover several with a comma, e.g.
   `variant=function,options` when a style cannot be written another way. When blocks overlap, the one
-  naming the most choices is shown.
+  naming the most choices is shown. Fences with a `variant=` whose files differ only in extension
+  (`Page.tsx`, `Page.ts`, `Page.jsx`, `Page.js`) also form one example, and each block is shown under its
+  own file name.
 
 Run `npm run docs:sync` after editing. It checks every file first and changes nothing if one has a
 problem, printing the file and line. Otherwise it builds a new database from scratch and swaps it in; the

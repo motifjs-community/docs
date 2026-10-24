@@ -32,6 +32,14 @@
         { "id": "function", "label": "Function" },
         { "id": "options", "label": "Options" }
       ]
+    },
+    {
+      "id": "language",
+      "label": { "en": "Language", "tr": "Dil" },
+      "choices": [
+        { "id": "typescript", "label": "TypeScript" },
+        { "id": "javascript", "label": "JavaScript" }
+      ]
     }
   ]
 }

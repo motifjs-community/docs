@@ -5,6 +5,7 @@ export interface CodeVariant {
     /** "declarative/class", "class", "declarative", or null for a plain snippet. */
     variant: string | null;
     language: string | null;
+    file: string;
     code: string;
 }
 
@@ -47,6 +48,7 @@ export function articleSegments(page: DocPage | null, readerLocale: LocaleCode):
                 variants: blocks.map((pre) => ({
                     variant: pre.dataset.variant ?? null,
                     language: pre.dataset.lang ?? null,
+                    file: pre.dataset.file ?? node.dataset.file ?? '',
                     code: pre.textContent ?? ''
                 }))
             });
@@ -91,7 +93,7 @@ function wrapTables(root: DocumentFragment): void {
  * "class", "function,options"); a pattern fits when all its choices are chosen, and the one naming the most
  * choices wins (the first block on a tie).
  */
-export function pickVariant(variants: CodeVariant[], choices: Record<string, string>): string {
+export function pickVariant(variants: CodeVariant[], choices: Record<string, string>): CodeVariant | undefined {
     const chosen = new Set(Object.values(choices));
     let best: CodeVariant | undefined;
     let bestScore = 0;
@@ -104,5 +106,5 @@ export function pickVariant(variants: CodeVariant[], choices: Record<string, str
             }
         }
     }
-    return (best ?? variants[0])?.code ?? '';
+    return best ?? variants[0];
 }

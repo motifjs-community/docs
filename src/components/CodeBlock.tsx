@@ -25,7 +25,7 @@ async function writeClipboard(text: string): Promise<boolean> {
 }
 
 /** A documentation snippet: file name, copy action and highlighted source. */
-export function CodeBlock(props: { file: string; source: Bind<string> }) {
+export function CodeBlock(props: { file: Bind<string>; source: Bind<string> }) {
     const state = reactive({ copied: false });
     let resetTimer = 0;
 
@@ -39,7 +39,7 @@ export function CodeBlock(props: { file: string; source: Bind<string> }) {
     return (
         <div class="docs-code" ondisposing={() => clearTimeout(resetTimer)}>
             <div class="docs-code-header">
-                <span class="docs-code-file">{props.file}</span>
+                <span class="docs-code-file">{() => read(props.file)}</span>
                 <button
                     type="button"
                     class={() => state.copied ? 'docs-code-copy is-copied' : 'docs-code-copy'}

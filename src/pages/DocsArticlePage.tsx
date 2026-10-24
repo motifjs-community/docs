@@ -9,7 +9,7 @@ import { CodeBlock } from '../components/CodeBlock';
 function Segment(props: { segment: ArticleSegment }) {
     const segment = props.segment;
     if (segment.kind === 'code') {
-        return <CodeBlock file={segment.file} source={() => pickVariant(segment.variants, codeChoices)} />;
+        return <CodeBlock file={() => pickVariant(segment.variants, codeChoices)?.file || segment.file} source={() => pickVariant(segment.variants, codeChoices)?.code ?? ''} />;
     }
     return <div class="docs-prose" onbuilt={(c) => (c.element as HTMLElement).innerHTML = segment.html} />;
 }
