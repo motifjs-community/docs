@@ -77,6 +77,8 @@ function CardRibbons(props: { variant: RibbonVariant }) {
     );
 }
 
+const installLines = site.installCommands ?? ['npm install @motifx/core', 'npm install -D @motifx/compiler'];
+
 export default function HomePage() {
     return (
         <main class="home-page" onConfig={(c) => c.bindings.watch(() => showNav(localeState.current))}>
@@ -116,17 +118,13 @@ export default function HomePage() {
 
                 <div class="hero-inner">
                     <div class="hero-copy">
-                        <div class="eyebrow"><span class="eyebrow-dot"></span> {() => t('home.hero.eyebrow')}</div>
-                        <h1 id="hero-title">{() => t('home.hero.titleStart')}<br />{() => t('home.hero.titleMiddle')} <span>{() => t('home.hero.titleAccent')}</span></h1>
-                        <p class="hero-description">
-                            {() => t('home.hero.description')}
-                        </p>
+                        <h1 id="hero-title">{() => t('home.hero.titleStart')}<br /><span>{() => t('home.hero.titleAccent')}</span></h1>
+                        <p class="hero-description">{() => t('home.hero.description')}</p>
 
                         <div class="hero-actions">
                             <a class="button button-primary" href={() => localePath('/docs/getting-started')} rel="router">{() => t('home.hero.getStarted')} <span aria-hidden="true">→</span></a>
-                            <a class="button button-quiet" href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.hero.exploreGithub')} <span aria-hidden="true">↗</span></a>
+                            <a class="button button-quiet" href="#why-motifjs">{() => t('home.hero.why')}</a>
                         </div>
-
                     </div>
 
                     <div class="docs-preview" id="examples" aria-label={() => t('home.hero.previewLabel')}>
@@ -215,29 +213,25 @@ export default function HomePage() {
 
             <section class="value-section section-wrap" id="why-motifjs">
                 <div class="section-heading">
-                    <span class="section-kicker">{() => t('home.value.kicker')}</span>
-                    <h2>{() => t('home.value.titleStart')} <span>{() => t('home.value.titleEnd')}</span></h2>
-                    <p>{() => t('home.value.description')}</p>
+                    <h2>{() => t('home.why.title')}</h2>
+                    <p>{() => t('home.why.description')}</p>
                 </div>
 
                 <div class="feature-grid">
                     <article class="feature-card">
                         <span class="feature-icon icon-pulse" aria-hidden="true"><i></i></span>
-                        <h3>{() => t('home.feature1.title')}</h3>
-                        <p>{() => t('home.feature1.description')}</p>
-                        <span class="feature-caption">{() => t('home.feature1.caption')}</span>
+                        <h3>{() => t('home.why.card1Title')}</h3>
+                        <p>{() => t('home.why.card1Description')}</p>
                     </article>
                     <article class="feature-card">
                         <span class="feature-icon icon-dom" aria-hidden="true"><i></i><i></i><i></i></span>
-                        <h3>{() => t('home.feature2.title')}</h3>
-                        <p>{() => t('home.feature2.description')}</p>
-                        <span class="feature-caption">{() => t('home.feature2.caption')}</span>
+                        <h3>{() => t('home.why.card2Title')}</h3>
+                        <p>{() => t('home.why.card2Description')}</p>
                     </article>
                     <article class="feature-card">
                         <span class="feature-icon icon-shapes" aria-hidden="true"><i></i><i></i></span>
-                        <h3>{() => t('home.feature3.title')}</h3>
-                        <p>{() => t('home.feature3.description')}</p>
-                        <span class="feature-caption">{() => t('home.feature3.caption')}</span>
+                        <h3>{() => t('home.why.card3Title')}</h3>
+                        <p>{() => t('home.why.card3Description')}</p>
                     </article>
                 </div>
             </section>
@@ -246,8 +240,7 @@ export default function HomePage() {
                 <div class="section-wrap approach-inner">
                     <div class="approach-intro">
                         <div>
-                            <span class="section-kicker">{() => t('home.approach.kicker')}</span>
-                            <h2>{() => t('home.approach.titleStart')}<br /><span>{() => t('home.approach.titleEnd')}</span></h2>
+                            <h2>{() => t('home.approach.title')}</h2>
                             <p>{() => t('home.approach.description')}</p>
                         </div>
                         <a class="text-link" href="#examples">{() => t('home.approach.tryExample')} <span aria-hidden="true">↗</span></a>
@@ -294,16 +287,14 @@ export default function HomePage() {
             <section class="runtime-section" id="runtime">
                 <div class="section-wrap runtime-inner">
                     <div class="runtime-copy">
-                        <span class="section-kicker">{() => t('home.runtime.kicker')}</span>
-                        <h2>{() => t('home.runtime.titleStart')}<br /><span>{() => t('home.runtime.titleEnd')}</span></h2>
+                        <h2>{() => t('home.runtime.title')}</h2>
                         <p>{() => t('home.runtime.description')}</p>
                         <ul class="runtime-list">
                             <li><span>✓</span> {() => t('home.runtime.point1')}</li>
                             <li><span>✓</span> {() => t('home.runtime.point2')}</li>
                             <li><span>✓</span> {() => t('home.runtime.point3')}</li>
                         </ul>
-                        <p class="runtime-ssr-note"><strong>SSR</strong><span>{() => t('home.runtime.ssrNote')}</span></p>
-                        <a class="text-link" href={() => localePath('/docs/getting-started')} rel="router">{() => t('home.runtime.explore')} <span aria-hidden="true">→</span></a>
+                        <a class="text-link" href={() => localePath('/docs/navigation')} rel="router">{() => t('home.runtime.explore')} <span aria-hidden="true">→</span></a>
                     </div>
 
                     <div class="runtime-visual" aria-label={() => t('home.runtime.visualLabel')}>
@@ -320,10 +311,7 @@ export default function HomePage() {
             <section class="explore-section" id="explore">
                 <div class="section-wrap">
                     <div class="explore-heading">
-                        <div>
-                            <span class="section-kicker">{() => t('home.explore.kicker')}</span>
-                            <h2>{() => t('home.explore.titleStart')}<br /><span>{() => t('home.explore.titleEnd')}</span></h2>
-                        </div>
+                        <h2>{() => t('home.explore.title')}</h2>
                         <p>{() => t('home.explore.description')}</p>
                     </div>
                     <div class="explore-grid">
@@ -342,52 +330,59 @@ export default function HomePage() {
                         <a class="explore-card" href={() => localePath('/docs/dependency-injection')} rel="router">
                             <span class="explore-pattern explore-pattern-services" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-service" aria-hidden="true"><i></i><i></i></span>
-                            <div><span class="mini-label">{() => t('home.explore.servicesLabel')}</span><h3>{() => t('home.explore.servicesTitle')}</h3><p>{() => t('home.explore.servicesDescription')}</p></div>
+                            <div><span class="mini-label">{() => t('home.explore.diLabel')}</span><h3>{() => t('home.explore.diTitle')}</h3><p>{() => t('home.explore.diDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
-                        <a class="explore-card" href={() => localePath('/docs/lifecycle')} rel="router">
+                        <a class="explore-card" href={() => localePath('/docs/memory-and-dispose')} rel="router">
                             <span class="explore-pattern explore-pattern-lifecycle" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-lifecycle" aria-hidden="true"><i></i><i></i></span>
-                            <div><span class="mini-label">{() => t('home.explore.lifecycleLabel')}</span><h3>{() => t('home.explore.lifecycleTitle')}</h3><p>{() => t('home.explore.lifecycleDescription')}</p></div>
+                            <div><span class="mini-label">{() => t('home.explore.memoryLabel')}</span><h3>{() => t('home.explore.memoryTitle')}</h3><p>{() => t('home.explore.memoryDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
-                        <a class="explore-card" href={() => localePath('/docs/virtualization')} rel="router">
+                        <a class="explore-card" href={() => localePath('/docs/frame')} rel="router">
                             <span class="explore-pattern explore-pattern-virtualization" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-virtualization" aria-hidden="true"><i></i><i></i><i></i></span>
-                            <div><span class="mini-label">{() => t('home.explore.virtualizationLabel')}</span><h3>{() => t('home.explore.virtualizationTitle')}</h3><p>{() => t('home.explore.virtualizationDescription')}</p></div>
+                            <div><span class="mini-label">{() => t('home.explore.contentLabel')}</span><h3>{() => t('home.explore.contentTitle')}</h3><p>{() => t('home.explore.contentDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
-                        <a class="explore-card explore-card-wide" href="#examples">
+                        <a class="explore-card explore-card-wide" href={() => localePath('/docs/resilience')} rel="router">
                             <span class="explore-pattern explore-pattern-examples" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-code" aria-hidden="true">&lt;/&gt;</span>
-                            <div><span class="mini-label">{() => t('home.explore.examplesLabel')}</span><h3>{() => t('home.explore.examplesTitle')}</h3><p>{() => t('home.explore.examplesDescription')}</p></div>
+                            <div><span class="mini-label">{() => t('home.explore.queryLabel')}</span><h3>{() => t('home.explore.queryTitle')}</h3><p>{() => t('home.explore.queryDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
                     </div>
                 </div>
             </section>
 
-            <section class="principles-section">
-                <div class="section-wrap principles-inner">
-                    <div class="principles-heading">
-                        <span class="section-kicker">{() => t('home.principles.kicker')}</span>
-                        <h2>{() => t('home.principles.titleStart')}<br /><span>{() => t('home.principles.titleEnd')}</span></h2>
+            <section class="tooling-section" id="tooling">
+                <div class="section-wrap">
+                    <h2>{() => t('home.tooling.title')}</h2>
+                    <div class="tooling-grid">
+                        <a class="tooling-card" href={() => localePath('/docs/jsx#compile-time-diagnostics')} rel="router">
+                            <h3>{() => t('home.tooling.card1Title')}</h3>
+                            <p>{() => t('home.tooling.card1Description')}</p>
+                        </a>
+                        <a class="tooling-card" href={() => localePath('/docs/getting-started#dev-helpers')} rel="router">
+                            <h3>{() => t('home.tooling.card2Title')}</h3>
+                            <p>{() => t('home.tooling.card2Description')}</p>
+                        </a>
+                        <a class="tooling-card" href={() => localePath('/docs/error-codes')} rel="router">
+                            <h3>{() => t('home.tooling.card3Title')}</h3>
+                            <p>{() => t('home.tooling.card3Description')}</p>
+                        </a>
+                        <a class="tooling-card" href={site.links.skills ?? site.links.repository} target="_blank" rel="noreferrer">
+                            <h3>{() => t('home.tooling.card4Title')}</h3>
+                            <p>{() => t('home.tooling.card4Description')}</p>
+                        </a>
                     </div>
-                    <div class="principle-stats">
-                        <article><strong>2</strong><span>{() => t('home.principles.stat1')}</span><small>{() => t('home.principles.stat1Detail')}</small></article>
-                        <article><strong>3</strong><span>{() => t('home.principles.stat2')}</span><small>{() => t('home.principles.stat2Detail')}</small></article>
-                        <article><strong>0</strong><span>{() => t('home.principles.stat3')}</span><small>{() => t('home.principles.stat3Detail')}</small></article>
-                    </div>
-                    <div class="principles-ribbon" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 </div>
             </section>
 
             <section class="community-section">
                 <div class="section-wrap community-inner">
                     <div>
-                        <span class="section-kicker">{() => t('home.community.kicker')}</span>
-                        <h2>{() => t('home.community.titleStart')}<br /><span>{() => t('home.community.titleEnd')}</span></h2>
-                        <p>{() => t('home.community.description')}</p>
+                        <h2>{() => t('home.community.title')}</h2>
                     </div>
                     <div class="community-actions">
                         <a class="button button-primary" href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.community.repository')} <span aria-hidden="true">↗</span></a>
@@ -401,13 +396,14 @@ export default function HomePage() {
                 <div class="start-glow" aria-hidden="true"></div>
                 <div class="start-inner">
                     <div>
-                        <span class="section-kicker">{() => t('home.start.kicker')}</span>
-                        <h2>{() => t('home.start.titleStart')}<br />{() => t('home.start.titleEnd')}</h2>
+                        <h2>{() => t('home.start.title')}</h2>
                         <p>{() => t('home.start.description')}</p>
                     </div>
                     <div class="install-card">
                         <span class="install-label">{() => t('home.start.install')}</span>
-                        <code><span class="terminal-prompt">$</span> {site.installCommand ?? 'npm install @motifx/core @motifx/compiler'}</code>
+                        <div class="install-lines">
+                            {installLines.map((line) => <code key={line}><span class="terminal-prompt">$</span> {line}</code>)}
+                        </div>
                         <div class="install-links">
                             <a href={() => localePath('/docs/getting-started#build-setup')} rel="router">{() => t('home.start.buildSetup')} <span aria-hidden="true">→</span></a>
                             <a href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.start.project')} <span aria-hidden="true">↗</span></a>

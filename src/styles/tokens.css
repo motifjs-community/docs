@@ -342,7 +342,7 @@
     --runtime-visual-bg: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--color-accent) 9%, transparent), transparent 65%),
         var(--color-bg-card);
     --runtime-state-card-shadow: 0 12px 28px color-mix(in srgb, var(--black) 12%, transparent);
-    --principles-section-bg: var(--color-bg-raised);
+    --tooling-section-bg: var(--color-bg-raised);
     --footer-github-text: var(--orange-200);
     --docs-category-card-bg: color-mix(in srgb, var(--color-bg-card) 93%, transparent);
     --docs-category-card-shadow: 0 14px 45px color-mix(in srgb, var(--black) 10%, transparent);
@@ -422,7 +422,7 @@
     --runtime-visual-bg: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--orange-400) 8%, transparent), transparent 65%),
         var(--color-bg-card);
     --runtime-state-card-shadow: 0 12px 28px color-mix(in srgb, var(--gray-830) 9%, transparent);
-    --principles-section-bg: var(--gray-50);
+    --tooling-section-bg: var(--gray-50);
     --footer-github-text: var(--orange-500);
     --docs-category-card-bg: color-mix(in srgb, var(--color-bg-card) 96%, transparent);
     --docs-category-card-shadow: 0 14px 45px color-mix(in srgb, var(--gray-830) 4.5%, transparent);
