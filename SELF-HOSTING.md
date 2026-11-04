@@ -228,7 +228,8 @@ This builds the site, syncs the docs and writes the whole site to `dist/`:
 
 - one `.html` file per page and language (`docs/routing.html`, `tr/docs/routing.html`), which static
   hosts serve at the address without `.html`
-- `api/docs/{code}/nav.json` and `api/docs/{code}/pages/{slug}.json`: the same answers the server gives,
+- `api/docs/{code}/nav.json`, `api/docs/{code}/pages/{slug}.json` and `api/docs/{code}/search.json` (the
+  search index of a language, loaded when a reader opens the search): the same answers the server gives,
   so the site reads its docs the same way
 - `sitemap.xml`, `robots.txt`, `404.html`
 - a forwarding page at every old address

@@ -10,7 +10,7 @@ namespace MotifJs.Docs.Site;
 /// Cloudflare Pages): every page with its meta tags and crawler copy, every API response as a .json file,
 /// the sitemap, and a small page for every redirect. Reads the built site (wwwroot) and the synced database.
 /// </summary>
-public sealed class StaticExport(DocsStore store, SiteLinks links, PageShell pageShell, string webRoot, TextWriter output)
+public sealed class StaticExport(DocsStore store, DocsSearchIndex search, SiteLinks links, PageShell pageShell, string webRoot, TextWriter output)
 {
     // Left in the output so a later export knows the folder is its own and may be emptied.
     private const string Marker = ".static-export";
@@ -54,6 +54,7 @@ public sealed class StaticExport(DocsStore store, SiteLinks links, PageShell pag
 
             var nav = store.GetNav(locale);
             WriteJson(outDir, DocsApi.NavPath(locale), nav);
+            WriteJson(outDir, DocsApi.SearchPath(locale), search.Get(locale));
 
             foreach (var slug in nav.SelectMany(c => c.Pages).Select(p => p.Slug))
             {

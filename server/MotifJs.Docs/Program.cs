@@ -23,7 +23,7 @@ if (args.FirstOrDefault() == "export")
     var outDir = FromContentRoot(args.Skip(1).FirstOrDefault(a => !a.StartsWith("--")) ?? "../../dist");
     var store = new DocsStore(docsDatabase, docsOptions);
     var links = new SiteLinks(docsOptions, builder.Configuration, site);
-    var export = new StaticExport(store, links, new PageShell(store, links, site),
+    var export = new StaticExport(store, new DocsSearchIndex(store), links, new PageShell(store, links, site),
         Path.Combine(builder.Environment.ContentRootPath, "wwwroot"), Console.Out);
     return export.Run(outDir);
 }
@@ -40,12 +40,16 @@ builder.Services.AddSingleton(site);
 builder.Services.AddSingleton(docsOptions);
 builder.Services.AddSingleton(docsDatabase);
 builder.Services.AddSingleton<DocsStore>();
+builder.Services.AddSingleton<DocsSearchIndex>();
 builder.Services.AddSingleton<SiteLinks>();
 builder.Services.AddSingleton<PageShell>();
 builder.Services.AddSingleton<IndexPage>();
+// The docs API answers are text (the search index of a language is a quarter megabyte); compressed they are a fifth of that.
+builder.Services.AddResponseCompression(options => options.EnableForHttps = true);
 
 var app = builder.Build();
 
+app.UseResponseCompression();
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = file =>

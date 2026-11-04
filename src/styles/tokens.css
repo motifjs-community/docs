@@ -179,6 +179,7 @@
     --z-dropdown: 12;
     --z-overlay: 39;
     --z-drawer: 40;
+    --z-dialog: 50;
     --z-behind: -1;
     --layout-max-wide: 1240px;
     --layout-max-content: 1110px;
@@ -365,6 +366,8 @@
     --shadow-docs-code-pref-option-is-selected: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent);
     --shadow-docs-tree-link-is-active-docs-tree-active-mark: 0 0 8px color-mix(in srgb, var(--color-accent) 80%, transparent);
     --shadow-docs-sidebar: 18px 0 48px color-mix(in srgb, var(--black) 35%, transparent);
+    --shadow-search-dialog: 0 28px 70px color-mix(in srgb, var(--black) 45%, transparent);
+    --search-backdrop-bg: color-mix(in srgb, var(--black) 55%, transparent);
 }
 
 :root[data-theme="light"] {
@@ -425,4 +428,6 @@
     --docs-category-card-shadow: 0 14px 45px color-mix(in srgb, var(--gray-830) 4.5%, transparent);
     --docs-category-card-featured-bg: radial-gradient(ellipse at 100% 0, color-mix(in srgb, var(--orange-500) 7%, transparent), transparent 58%), var(--color-bg-card);
     --docs-code-copy-is-copied-text: var(--green-800);
+    --shadow-search-dialog: 0 24px 60px color-mix(in srgb, var(--gray-830) 18%, transparent);
+    --search-backdrop-bg: color-mix(in srgb, var(--gray-900) 32%, transparent);
 }

@@ -10,6 +10,7 @@ public static class DocsApi
 {
     public static string NavPath(string locale) => $"/api/docs/{locale}/nav.json";
     public static string PagePath(string locale, string slug) => $"/api/docs/{locale}/pages/{slug}.json";
+    public static string SearchPath(string locale) => $"/api/docs/{locale}/search.json";
 
     public static void MapDocsApi(this IEndpointRouteBuilder app)
     {
@@ -19,6 +20,13 @@ public static class DocsApi
         {
             if (!store.IsLocale(locale)) return Results.NotFound();
             return NotModified(context, store, locale) ?? Results.Ok(store.GetNav(locale));
+        });
+
+        // The whole language as plain text sections; the app loads it when the search opens.
+        api.MapGet("/search.json", (string locale, DocsStore store, DocsSearchIndex index, HttpContext context) =>
+        {
+            if (!store.IsLocale(locale)) return Results.NotFound();
+            return NotModified(context, store, locale, "search") ?? Results.Ok(index.Get(locale));
         });
 
         api.MapGet("/pages/{slug}.json", (string locale, string slug, DocsStore store, HttpContext context) =>

@@ -1,6 +1,7 @@
 import { localePath, localeState, t } from '../i18n';
 import { prefetchPage } from '../content/docs/api';
 import { docsState, firstDocSlug, showNav } from '../content/docs/state';
+import { openSearch, searchShortcut } from '../components/SearchDialog';
 
 const categoryIcons: Record<string, string> = {
     '1': 'M5.5 3.6v8.8L12.4 8 5.5 3.6Z',
@@ -18,9 +19,16 @@ export default function DocsHomePage() {
                     <span class="docs-eyebrow"><i></i>{() => t('docs.home.eyebrow')}</span>
                     <h1>{() => t('docs.home.title')}</h1>
                     <p>{() => t('docs.home.description')}</p>
-                    <a class="docs-start-link" href={() => localePath(firstDocSlug() ? `/docs/${firstDocSlug()}` : '/docs')} rel="router">
-                        {() => t('docs.home.startHere')} <span aria-hidden="true">→</span>
-                    </a>
+                    <div class="docs-home-actions">
+                        <a class="docs-start-link" href={() => localePath(firstDocSlug() ? `/docs/${firstDocSlug()}` : '/docs')} rel="router">
+                            {() => t('docs.home.startHere')} <span aria-hidden="true">→</span>
+                        </a>
+                        <button class="docs-search-button" type="button" aria-label={() => t('search.open')} onclick={(e) => openSearch(e.currentTarget as HTMLElement)}>
+                            <span class="search-glyph" aria-hidden="true"></span>
+                            <span class="docs-search-label">{() => t('search.open')}</span>
+                            <kbd>{searchShortcut}</kbd>
+                        </button>
+                    </div>
                 </div>
             </section>
 

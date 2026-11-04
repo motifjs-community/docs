@@ -3,6 +3,7 @@ import { localePath, localeState, rememberLocale, stripLocale, supportedLocales,
 import SiteFooter from './SiteFooter';
 import site from 'virtual:site-config';
 import { BrandMark, BrandWordmark } from '../components/Brand';
+import { closeSearch, isSearchShortcut, openSearch, SearchDialog, searchState } from '../components/SearchDialog';
 import { routeInLocale } from '../content/docs/state';
 
 export default function MainLayout() {
@@ -50,11 +51,21 @@ export default function MainLayout() {
         };
         const reveal = () => root.classList.remove('header-hidden');
 
+        // Ctrl K / ⌘ K opens the docs search from any page, and closes it again.
+        const shortcut = (event: KeyboardEvent) => {
+            if (!isSearchShortcut(event)) return;
+            event.preventDefault();
+            if (searchState.open) closeSearch();
+            else openSearch();
+        };
+
         window.addEventListener('scroll', schedule, { passive: true });
+        window.addEventListener('keydown', shortcut);
         smallScreen.addEventListener('change', schedule);
         header.element.addEventListener('focusin', reveal); // keyboard users must never land on a hidden menu
         header.motif.setDisposable(() => {
             window.removeEventListener('scroll', schedule);
+            window.removeEventListener('keydown', shortcut);
             smallScreen.removeEventListener('change', schedule);
             header.element.removeEventListener('focusin', reveal);
             cancelAnimationFrame(frame);
@@ -136,6 +147,7 @@ export default function MainLayout() {
                 <RouterView />
             </div>
             <SiteFooter />
+            <SearchDialog />
         </>
     );
 }

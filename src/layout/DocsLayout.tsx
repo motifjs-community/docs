@@ -4,6 +4,7 @@ import { docsState, showNav, showPage } from '../content/docs/state';
 import { codeChoices, codeOptions, setCodeChoice } from '../preferences/code-style';
 import { localePath, localeState, localized, setPageTitle, t } from '../i18n';
 import { BrandMark } from '../components/Brand';
+import { openSearch, searchShortcut } from '../components/SearchDialog';
 
 /** A heading counts as "current" once its top passes this line (px from the viewport top). */
 const activeSectionLine = 140;
@@ -198,6 +199,11 @@ export default function DocsLayout() {
                     <b>/</b>
                     <span class="docs-toolbar-current">{() => shownPage()?.title ?? ''}</span>
                 </div>
+                <button class="docs-search-button" type="button" aria-label={() => t('search.open')} onclick={(e) => openSearch(e.currentTarget as HTMLElement)}>
+                    <span class="search-glyph" aria-hidden="true"></span>
+                    <span class="docs-search-label">{() => t('search.open')}</span>
+                    <kbd>{searchShortcut}</kbd>
+                </button>
             </div>
 
             <div class={() => sidebar.mobileOpen ? 'docs-drawer-backdrop is-visible' : 'docs-drawer-backdrop'} aria-hidden="true" onclick={() => setDrawer(false, true)}></div>
@@ -263,7 +269,7 @@ export default function DocsLayout() {
                 <aside class="docs-toc" aria-label={() => t('docs.detail.onThisPage')}>
                     <h2>{() => t('docs.detail.onThisPage')}</h2>
                     <nav>
-                        {() => (shownPage()?.headings ?? []).map((heading) => (
+                        {(shownPage()?.headings ?? []).map((heading) => (
                             <a
                                 href={`#${heading.id}`}
                                 key={`toc-${heading.id}`}
