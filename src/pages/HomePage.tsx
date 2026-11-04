@@ -233,6 +233,21 @@ export default function HomePage() {
                         <h3>{() => t('home.why.card3Title')}</h3>
                         <p>{() => t('home.why.card3Description')}</p>
                     </article>
+                    <article class="feature-card">
+                        <span class="feature-icon icon-pulse" aria-hidden="true"><i></i></span>
+                        <h3>{() => t('home.why.card4Title')}</h3>
+                        <p>{() => t('home.why.card4Description')}</p>
+                    </article>
+                    <article class="feature-card">
+                        <span class="feature-icon icon-dom" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <h3>{() => t('home.why.card5Title')}</h3>
+                        <p>{() => t('home.why.card5Description')}</p>
+                    </article>
+                    <article class="feature-card">
+                        <span class="feature-icon icon-shapes" aria-hidden="true"><i></i><i></i></span>
+                        <h3>{() => t('home.why.card6Title')}</h3>
+                        <p>{() => t('home.why.card6Description')}</p>
+                    </article>
                 </div>
             </section>
 
@@ -312,7 +327,6 @@ export default function HomePage() {
                 <div class="section-wrap">
                     <div class="explore-heading">
                         <h2>{() => t('home.explore.title')}</h2>
-                        <p>{() => t('home.explore.description')}</p>
                     </div>
                     <div class="explore-grid">
                         <a class="explore-card explore-card-large" href={() => localePath('/docs/reactivity')} rel="router">
