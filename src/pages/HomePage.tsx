@@ -1,9 +1,33 @@
-import { t } from '../i18n';
+import { localePath, localeState, t } from '../i18n';
 import site from 'virtual:site-config';
 import { BrandMark } from '../components/Brand';
+import { openSearch, searchShortcut } from '../components/SearchDialog';
 import { codeExamples, writingStyles, componentStyles } from '../content/docs/code-examples';
+import type { NavPage } from '../content/docs/api';
+import { docsState, showNav } from '../content/docs/state';
 import { HighlightedCode } from '../components/HighlightedCode';
 import { codeChoices, resolveCode, setCodeChoice } from '../preferences/code-style';
+
+// The docs preview in the hero shows the real documentation: its menu, and the Getting Started page
+// (the first page when a site has none) with the counter example that page explains.
+const previewSlug = 'getting-started';
+
+function docsPages(): NavPage[] {
+    return docsState.nav.flatMap((category) => category.pages);
+}
+
+function previewPage(): NavPage | null {
+    const pages = docsPages();
+    return pages.find((page) => page.slug === previewSlug) ?? pages[0] ?? null;
+}
+
+function pageAfterPreview(): NavPage | null {
+    const pages = docsPages();
+    const at = pages.findIndex((page) => page.slug === previewPage()?.slug);
+    return at >= 0 ? pages[at + 1] ?? null : null;
+}
+
+const docsLink = (page: NavPage | null) => localePath(page ? `/docs/${page.slug}` : '/docs');
 
 const primaryRibbons = Array.from({ length: 17 }, (_, index) => {
     const offset = index * 13;
@@ -55,7 +79,7 @@ function CardRibbons(props: { variant: RibbonVariant }) {
 
 export default function HomePage() {
     return (
-        <main class="home-page">
+        <main class="home-page" onConfig={(c) => c.bindings.watch(() => showNav(localeState.current))}>
             <section class="hero" aria-labelledby="hero-title">
                 <div class="hero-scene" aria-hidden="true">
                     <svg class="hero-ribbons" viewBox="0 0 1440 800" preserveAspectRatio="none" aria-hidden="true">
@@ -99,7 +123,7 @@ export default function HomePage() {
                         </p>
 
                         <div class="hero-actions">
-                            <a class="button button-primary" href="#get-started">{() => t('home.hero.getStarted')} <span aria-hidden="true">↗</span></a>
+                            <a class="button button-primary" href={() => localePath('/docs/getting-started')} rel="router">{() => t('home.hero.getStarted')} <span aria-hidden="true">→</span></a>
                             <a class="button button-quiet" href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.hero.exploreGithub')} <span aria-hidden="true">↗</span></a>
                         </div>
 
@@ -109,31 +133,33 @@ export default function HomePage() {
                         <div class="docs-preview-topbar">
                             <div class="preview-brand">
                                 <BrandMark />
-                                <span>motif<span>js</span></span>
+                                <span>Motif<span>JS</span></span>
                             </div>
                             <div class="preview-product-nav"><span>{() => t('home.preview.docs')}</span><span>{() => t('home.preview.apiReference')}</span><span>{() => t('header.examples')}</span></div>
-                            <div class="preview-search"><span class="search-glyph" aria-hidden="true"></span> {() => t('home.hero.search')} <kbd>⌘ K</kbd></div>
+                            <button type="button" class="preview-search" onclick={(e) => openSearch(e.currentTarget as HTMLElement)}><span class="search-glyph" aria-hidden="true"></span> {() => t('search.open')} <kbd>{searchShortcut}</kbd></button>
                         </div>
 
                         <div class="docs-preview-body">
-                            <aside class="preview-sidebar" aria-label="Preview documentation navigation">
-                                <span class="preview-side-caption">{() => t('home.preview.gettingStarted')}</span>
-                                <span class="preview-side-link is-current"><i></i> {() => t('home.preview.introduction')}</span>
-                                <span class="preview-side-link">{() => t('home.preview.quickstart')}</span>
-                                <span class="preview-side-link">{() => t('home.preview.installation')}</span>
-                                <span class="preview-side-caption preview-side-spaced">{() => t('home.preview.coreConcepts')}</span>
-                                <span class="preview-side-link">{() => t('home.preview.components')}</span>
-                                <span class="preview-side-link">{() => t('home.preview.reactivity')}</span>
-                                <span class="preview-side-link">{() => t('home.preview.bindings')}</span>
-                                <span class="preview-side-caption preview-side-spaced">{() => t('home.preview.guides')}</span>
-                                <span class="preview-side-link">{() => t('home.preview.routing')}</span>
-                                <span class="preview-side-link">{() => t('home.preview.services')}</span>
+                            <aside class="preview-sidebar" aria-label={() => t('docs.detail.navigation')}>
+                                {docsState.nav.slice(0, 2).map((category) => (
+                                    <div class="preview-side-group" key={category.id}>
+                                        <span class="preview-side-caption">{category.title}</span>
+                                        {category.pages.map((doc) => (
+                                            <a
+                                                key={doc.slug}
+                                                class={() => previewPage()?.slug === doc.slug ? 'preview-side-link is-current' : 'preview-side-link'}
+                                                href={() => docsLink(doc)}
+                                                rel="router"
+                                            ><i></i><span>{doc.title}</span></a>
+                                        ))}
+                                    </div>
+                                ))}
                             </aside>
 
                             <div class="preview-article">
-                                <div class="preview-breadcrumb"><span>{() => t('home.preview.docs')}</span><b>/</b><span>{() => t('home.preview.introduction')}</span></div>
-                                <h2>{() => t('home.preview.articleTitle')}</h2>
-                                <p>{() => t('home.preview.articleDescription')}</p>
+                                <div class="preview-breadcrumb"><span>{() => t('home.preview.docs')}</span><b>/</b><span>{() => previewPage()?.title ?? ''}</span></div>
+                                <h2>{() => previewPage()?.title ?? ''}</h2>
+                                <p>{() => previewPage()?.description ?? ''}</p>
 
                                 <div class="preview-note"><span class="note-spark">✳</span><span>{() => t('home.preview.note')}</span></div>
 
@@ -178,7 +204,7 @@ export default function HomePage() {
                                     <div class="showcase-foot"><span class="live-indicator"></span> {() => t('home.preview.yourStyle')}</div>
                                 </div>
 
-                                <div class="preview-next"><span>{() => t('home.preview.next')}</span><strong>{() => t('home.preview.nextTopic')} <b aria-hidden="true">→</b></strong></div>
+                                <a class="preview-next" href={() => docsLink(pageAfterPreview())} rel="router"><span>{() => t('home.preview.next')}</span><strong>{() => pageAfterPreview()?.title ?? ''} <b aria-hidden="true">→</b></strong></a>
                             </div>
                         </div>
                     </div>
@@ -277,7 +303,7 @@ export default function HomePage() {
                             <li><span>✓</span> {() => t('home.runtime.point3')}</li>
                         </ul>
                         <p class="runtime-ssr-note"><strong>SSR</strong><span>{() => t('home.runtime.ssrNote')}</span></p>
-                        <a class="text-link" href="#get-started">{() => t('home.runtime.explore')} <span aria-hidden="true">→</span></a>
+                        <a class="text-link" href={() => localePath('/docs/getting-started')} rel="router">{() => t('home.runtime.explore')} <span aria-hidden="true">→</span></a>
                     </div>
 
                     <div class="runtime-visual" aria-label={() => t('home.runtime.visualLabel')}>
@@ -301,31 +327,31 @@ export default function HomePage() {
                         <p>{() => t('home.explore.description')}</p>
                     </div>
                     <div class="explore-grid">
-                        <a class="explore-card explore-card-large" href="#get-started">
+                        <a class="explore-card explore-card-large" href={() => localePath('/docs/reactivity')} rel="router">
                             <CardRibbons variant="state" />
                             <span class="explore-icon explore-icon-reactive" aria-hidden="true"><i></i><i></i><i></i></span>
                             <div><span class="mini-label">{() => t('home.explore.reactivityLabel')}</span><h3>{() => t('home.explore.reactivityTitle')}</h3><p>{() => t('home.explore.reactivityDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
-                        <a class="explore-card" href="#get-started">
+                        <a class="explore-card" href={() => localePath('/docs/routing')} rel="router">
                             <span class="explore-pattern explore-pattern-routing" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-router" aria-hidden="true"><i></i><i></i><i></i></span>
                             <div><span class="mini-label">{() => t('home.explore.routingLabel')}</span><h3>{() => t('home.explore.routingTitle')}</h3><p>{() => t('home.explore.routingDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
-                        <a class="explore-card" href="#get-started">
+                        <a class="explore-card" href={() => localePath('/docs/dependency-injection')} rel="router">
                             <span class="explore-pattern explore-pattern-services" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-service" aria-hidden="true"><i></i><i></i></span>
                             <div><span class="mini-label">{() => t('home.explore.servicesLabel')}</span><h3>{() => t('home.explore.servicesTitle')}</h3><p>{() => t('home.explore.servicesDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
-                        <a class="explore-card" href="#runtime">
+                        <a class="explore-card" href={() => localePath('/docs/lifecycle')} rel="router">
                             <span class="explore-pattern explore-pattern-lifecycle" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-lifecycle" aria-hidden="true"><i></i><i></i></span>
                             <div><span class="mini-label">{() => t('home.explore.lifecycleLabel')}</span><h3>{() => t('home.explore.lifecycleTitle')}</h3><p>{() => t('home.explore.lifecycleDescription')}</p></div>
                             <span class="explore-arrow" aria-hidden="true">↗</span>
                         </a>
-                        <a class="explore-card" href="#get-started">
+                        <a class="explore-card" href={() => localePath('/docs/virtualization')} rel="router">
                             <span class="explore-pattern explore-pattern-virtualization" aria-hidden="true"></span>
                             <span class="explore-icon explore-icon-virtualization" aria-hidden="true"><i></i><i></i><i></i></span>
                             <div><span class="mini-label">{() => t('home.explore.virtualizationLabel')}</span><h3>{() => t('home.explore.virtualizationTitle')}</h3><p>{() => t('home.explore.virtualizationDescription')}</p></div>
@@ -350,7 +376,7 @@ export default function HomePage() {
                     <div class="principle-stats">
                         <article><strong>2</strong><span>{() => t('home.principles.stat1')}</span><small>{() => t('home.principles.stat1Detail')}</small></article>
                         <article><strong>3</strong><span>{() => t('home.principles.stat2')}</span><small>{() => t('home.principles.stat2Detail')}</small></article>
-                        <article><strong>1</strong><span>{() => t('home.principles.stat3')}</span><small>{() => t('home.principles.stat3Detail')}</small></article>
+                        <article><strong>0</strong><span>{() => t('home.principles.stat3')}</span><small>{() => t('home.principles.stat3Detail')}</small></article>
                     </div>
                     <div class="principles-ribbon" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 </div>
@@ -365,7 +391,7 @@ export default function HomePage() {
                     </div>
                     <div class="community-actions">
                         <a class="button button-primary" href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.community.repository')} <span aria-hidden="true">↗</span></a>
-                        <a class="button button-quiet" href={site.links.issues} target="_blank" rel="noreferrer">{() => t('home.community.discussions')} <span aria-hidden="true">↗</span></a>
+                        <a class="button button-quiet" href={site.links.discussions ?? site.links.issues} target="_blank" rel="noreferrer">{() => t('home.community.discussions')} <span aria-hidden="true">↗</span></a>
                     </div>
                     <div class="community-mark" aria-hidden="true"><BrandMark /><i></i><i></i><i></i></div>
                 </div>
@@ -381,8 +407,9 @@ export default function HomePage() {
                     </div>
                     <div class="install-card">
                         <span class="install-label">{() => t('home.start.install')}</span>
-                        <code><span class="terminal-prompt">$</span> npm install @motifx/core @motifx/compiler</code>
+                        <code><span class="terminal-prompt">$</span> {site.installCommand ?? 'npm install @motifx/core @motifx/compiler'}</code>
                         <div class="install-links">
+                            <a href={() => localePath('/docs/getting-started#build-setup')} rel="router">{() => t('home.start.buildSetup')} <span aria-hidden="true">→</span></a>
                             <a href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.start.project')} <span aria-hidden="true">↗</span></a>
                             <a href="#examples">{() => t('home.start.viewExample')} <span aria-hidden="true">→</span></a>
                         </div>

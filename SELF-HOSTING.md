@@ -72,8 +72,10 @@ copies it next to the server, so the server needs no other copy.
   ],
   "links": {
     "repository": "https://github.com/motifjsdev/motifjs",
-    "issues": "https://github.com/motifjsdev/motifjs/issues"
+    "issues": "https://github.com/motifjsdev/motifjs/issues",
+    "discussions": "https://github.com/motifjsdev/motifjs/discussions"
   },
+  "installCommand": "npm install @motifx/core @motifx/compiler",
   "codeOptions": [
     {
       "id": "writing",
@@ -104,7 +106,8 @@ copies it next to the server, so the server needs no other copy.
 | `logo.wordmark`, `logo.wordmarkAccent` | The text next to the mark; the accent part is shown in the accent colour (`motif` + `js`). Leave out `wordmarkAccent` for a single colour. |
 | `defaultLocale` | The language served at the root (`/docs/routing`). The others live under their code (`/tr/docs/routing`). Must be one of `locales`. |
 | `locales` | The languages: `code` is used in addresses and file names, `label` is shown in the language menu. |
-| `links.repository`, `links.issues` | Targets of the GitHub links in the header, footer and home page. |
+| `links.repository`, `links.issues`, `links.discussions` | Targets of the GitHub links in the header, footer and home page. Leave out `discussions` to send that button to the issues. |
+| `installCommand` | The install line on the home page, shown as written. |
 | `codeOptions` | The code preference panel of the docs (see below). Leave it out, or `[]`, for no panel. |
 
 Mistakes stop the build with a message naming what to fix, for example a language without a texts

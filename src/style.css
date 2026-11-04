@@ -3204,6 +3204,55 @@ body { font-size: var(--font-size-10); }
     .docs-pagination-card.is-next { align-items: flex-start; text-align: left; }
 }
 
+/* Docs preview in the hero: the real menu and page, so every entry leads somewhere. */
+.preview-search {
+    background: none;
+    color: var(--gray-460);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: border-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+}
+
+.preview-search:hover,
+.preview-search:focus-visible {
+    border-color: color-mix(in srgb, var(--color-accent) 40%, var(--preview-search-border));
+    color: var(--color-text-primary);
+}
+
+.preview-search:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+}
+
+.preview-side-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.preview-side-group + .preview-side-group { margin-top: 15px; }
+
+.preview-side-link {
+    min-width: 0;
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.preview-side-link:hover { color: var(--color-text-primary); }
+
+.preview-side-link span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.preview-side-link i { display: none; flex: 0 0 auto; }
+.preview-side-link.is-current i { display: block; }
+
+a.preview-next { text-decoration: none; }
+a.preview-next:hover strong { color: var(--color-accent-text); }
+
 /* Docs search: opened from the hero preview, the docs toolbar, the docs home and Ctrl/⌘ K. */
 .docs-search-button {
     display: inline-flex;

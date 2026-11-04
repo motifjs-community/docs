@@ -5,7 +5,7 @@ using MotifJs.Docs.Docs;
 namespace MotifJs.Docs.Site;
 
 public sealed record SiteLocale(string Code, string Label);
-public sealed record SiteLinksConfig(string Repository, string Issues);
+public sealed record SiteLinksConfig(string Repository, string Issues, string? Discussions);
 
 /// <summary>A choice readers can make about code examples; labels are text or one text per language.</summary>
 public sealed record SiteCodeOption(string Id, JsonElement Label, IReadOnlyList<SiteCodeChoice> Choices);

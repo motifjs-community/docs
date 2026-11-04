@@ -13,8 +13,10 @@
   ],
   "links": {
     "repository": "https://github.com/motifjsdev/motifjs",
-    "issues": "https://github.com/motifjsdev/motifjs/issues"
+    "issues": "https://github.com/motifjsdev/motifjs/issues",
+    "discussions": "https://github.com/motifjsdev/motifjs/discussions"
   },
+  "installCommand": "npm install @motifx/core@next @motifx/compiler@next",
   "codeOptions": [
     {
       "id": "writing",
