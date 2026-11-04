@@ -11,7 +11,7 @@ public static class Sitemap
     private static readonly XNamespace Xhtml = "http://www.w3.org/1999/xhtml";
 
     /// <summary>App pages that are not docs articles.</summary>
-    public static readonly string[] StaticRoutes = ["/", "/docs", "/about"];
+    public static readonly string[] StaticRoutes = ["/", "/docs", "/about", "/community"];
 
     public static void MapSitemap(this IEndpointRouteBuilder app)
     {

@@ -2133,6 +2133,20 @@ body {
 
 .community-actions .button { min-height: 42px; }
 
+/* Community page: the docs landing's hero, the home page's card grid, then the ways to take part. */
+.community-page .section-heading { margin-bottom: 34px; }
+.community-page .explore-card { min-height: 200px; }
+.community-join { margin-top: 84px; }
+.community-join .section-heading { margin-bottom: 0; }
+.community-join-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 28px;
+}
+.community-join-actions .button { min-height: 42px; }
+
 .community-mark {
     position: absolute;
     top: 50%;

@@ -88,6 +88,7 @@ export default function MainLayout() {
                         <a class="nav-link" rel="router" href={() => localePath('/#why-motifjs')}>{() => t('header.why')}</a>
                         <a class="nav-link" rel="router" href={() => localePath('/#examples')}>{() => t('header.examples')}</a>
                         <a class="nav-link" href={() => localePath('/docs')} rel="router">{() => t('header.docs')}</a>
+                        <a class="nav-link" href={() => localePath('/community')} rel="router">{() => t('header.community')}</a>
                         <a class="nav-link nav-github" href={site.links.repository} target="_blank" rel="noreferrer">
                             {() => t('header.github')} <span aria-hidden="true">↗</span>
                         </a>

@@ -33,6 +33,7 @@ export default function SiteFooter() {
                 </div>
                 <div class="footer-column">
                     <h3>{() => t('footer.community')}</h3>
+                    <a href={() => localePath('/community')} rel="router">{() => t('footer.packages')} <span aria-hidden="true">→</span></a>
                     <a href={site.links.repository} target="_blank" rel="noreferrer">{() => t('footer.repository')} <span aria-hidden="true">↗</span></a>
                     <a href={site.links.issues} target="_blank" rel="noreferrer">{() => t('footer.discussions')} <span aria-hidden="true">↗</span></a>
                     <a href="https://www.npmjs.com/package/@motifx/core" target="_blank" rel="noreferrer">{() => t('footer.npm')} <span aria-hidden="true">↗</span></a>

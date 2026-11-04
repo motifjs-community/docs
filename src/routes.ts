@@ -18,6 +18,10 @@ export const routes: RouteItem[] = [
                 control: () => import("./pages/AboutPage")
             },
             {
+                path: '/community',
+                control: () => import('./pages/CommunityPage')
+            },
+            {
                 path: '/docs',
                 control: () => import('./pages/DocsHomePage')
             },

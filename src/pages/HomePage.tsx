@@ -401,6 +401,7 @@ export default function HomePage() {
                     <div class="community-actions">
                         <a class="button button-primary" href={site.links.repository} target="_blank" rel="noreferrer">{() => t('home.community.repository')} <span aria-hidden="true">↗</span></a>
                         <a class="button button-quiet" href={site.links.discussions ?? site.links.issues} target="_blank" rel="noreferrer">{() => t('home.community.discussions')} <span aria-hidden="true">↗</span></a>
+                        <a class="button button-quiet" href={() => localePath('/community')} rel="router">{() => t('home.community.packages')} <span aria-hidden="true">→</span></a>
                     </div>
                     <div class="community-mark" aria-hidden="true"><BrandMark /><i></i><i></i><i></i></div>
                 </div>
