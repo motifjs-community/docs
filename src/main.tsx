@@ -23,6 +23,8 @@ const builder = Application.CreateBuilder();
 const app = builder.build();
 
 app.useRouter({ routes, mode: 'history', scrollMemory: true });
+// Warnings and route validation while developing; the production build drops this line.
+/* @DEV-ONLY */ app.useDevelopment(true);
 
 // The language lives in the address (/tr/...), so it follows every navigation.
 app.onRouterChanged(() => applyLocaleFromPath(location.pathname));
