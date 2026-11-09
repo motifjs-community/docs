@@ -100,7 +100,7 @@ app.run('#app', new Counter());
 3. **Lists need object items and a stable `key`.** Prefer arrays of objects over arrays of primitives; rows are matched by the item object (primitives by value/position), so object identity drives reuse. `key` does not affect reuse; it identifies items and a duplicate raises `MJX202`.
 4. **Never scan a reactive list inside a per-row getter.** `{() => notes.items.find((n) => n.id === props.id)?.title}` subscribes the row to every item's `id`: n rows → n² subscriptions, an id change reruns every row that scanned past it and a list replacement reruns every row, a `push` only the rows without a match (`MJX004` at compile time, `MJX210` at run time when two or more rows scan the same list of at least as many items, `MJX209` once an effect tracks 1000+ values). Hand the row its item (`<NoteRow note={note}/>`), or keep a keyed index in the store (a reactive `Map`, read with `byId(id)`), or read with `untracked(...)` when no subscription is wanted; `filter(...).length` is not a fix. See `references/jsx-and-reactivity.md`, *The list-scan trap*.
 5. **Show/hide with `x-wait`, not `{cond && <X/>}`.** `<Panel x-wait={() => !state.open} />` waits *while* the function returns `true` (`x-display` is the inverse). If it starts hidden the element is not built until the predicate turns `false` (the subtree, `onBuilding`, `onBuilt` and `onMounted` wait; `onConfig`/`onConfigured` still run), and later toggles only hide/show, so the instance and its state survive. `{cond && <X/>}` builds a new instance on every show and disposes it on every hide; pick it only when that dispose is the point. `&&` and ternary branches are rebuilt only when the condition value changes, so a component prop written as a plain expression inside a branch (`<Badge count={state.n}/>`) is a snapshot from when the branch was built; pass a getter (`count={() => state.n}`) and read it with `Bind<T>` / `read()` to keep it live.
-6. **In a block-bodied arrow in a JSX child position, statements before a `switch` or before `return a ? b : c` are kept**: they run in the discriminant/condition getter and the branches see the locals (a branch reads them when it is built, so a change that keeps the condition value does not reach it; write live values inside the branch as getters); `case` bodies, fall-through and the statements after the `switch` run as written. A shape the compiler cannot lower (a non-literal `case` label, a `return` or JSX before the `switch`, a `break` that leaves it) runs as `bindings.method` and warns `MJX016` (no branch is kept). Only an arrow **with parameters** still hoists the condition out of the closure (`MJX001`, `ReferenceError`); use an expression-bodied arrow there. The compiler also warns about three more silent mistakes (`MJX002` camelCase DOM event name on a component tag, `MJX003` `.map()` item without `key`, `MJX004` short-circuit array predicate in a reactive getter) — see `references/pitfalls.md`. A type-aware check, `npx motif-lint`, adds `MJX005` (a ternary passed to a component prop whose declared type is not `Bind<T>`). When unsure what a JSX expression compiles to, run `npx motif-explain file.tsx`: it prints, per expression, the real lowered call, its reactivity class and dependency surface (`references/setup.md`).
+6. **In a block-bodied arrow in a JSX child position, statements before a `switch` or before `return a ? b : c` are kept**: they run in the discriminant/condition getter and the branches see the locals (a branch reads them when it is built, so a change that keeps the condition value does not reach it; write live values inside the branch as getters); `case` bodies, fall-through and the statements after the `switch` run as written. A shape the compiler cannot lower (a non-literal `case` label, a `return` or JSX before the `switch`, a `break` that leaves it) runs as `bindings.method` and warns `MJX016` (no branch is kept). Only an arrow **with parameters** still hoists the condition out of the closure (`MJX001`, `ReferenceError`); use an expression-bodied arrow there. The compiler also warns about two more silent mistakes (`MJX002` camelCase DOM event name on a component tag, `MJX004` short-circuit array predicate in a reactive getter) — see `references/pitfalls.md`. A type-aware check, `npx motif-lint`, adds `MJX005` (a ternary passed to a component prop whose declared type is not `Bind<T>`). When unsure what a JSX expression compiles to, run `npx motif-explain file.tsx`: it prints, per expression, the real lowered call, its reactivity class and dependency surface (`references/setup.md`).
 7. **The component's own element:** a class component gets it from `class X extends Component<HTMLDivElement>` (the Motif Vite plugin injects `static elementTag = 'div'`, in `.ts` and `.tsx` files alike), `static elementTag` or `super('div')` (with no constructor the declared type is used; a tag passed to `super` wins over it); an Options object gets it from `el`. `view()` returns the content placed *inside* that element, never the element itself: a `div` component whose `view()` returns `<div>…</div>` renders `<div><div>…</div></div>`. Configure the component's own element in `onConfigured` (`this.class.add(...)`, `this.attr.add(...)`, `this.motif.on(...)`) and return only the content from `view()`. A class with no element declared, or an Options object with `el: undefined`/`null`, is a *fragment* (comment markers): `class`, `id` and the other attributes written on its tag reach nothing, silently, DOM event props on its tag listen on the content elements, and whatever `view()` returns are its children. A function component is different: the root it returns is the component's element.
 8. **Props typing:** `class X extends Component<HTMLDivElement, Props>`; read via `this.props`; JSX children arrive as `this.childs` (array of components).
 9. **Lifecycle:** fetch data in `onConfig` (props ready, not in DOM yet; in subclasses it runs at the start of `build()`, after class fields such as `state = reactive(...)` exist); use `onMounted` only when the element must be in the page and visible (focus, measure, a library that needs the element in the document): it runs in a later task once the component sits under a root that is in a document (the `run()` host or a `new Component(existingElement)` wrapper), after the screen may already be painted; an element you append to the document by hand never mounts; do everything else in `onBuilt` — `onBuilt` can fire while the element is still inside a detached fragment (ternary/list branches); clean external resources in `onDisposing` or via `this.motif.setDisposable`.
@@ -695,7 +695,7 @@ app.useReactiveMonitor({ enabled: true, threshold: 200, name: 'app' });
 
 ```ts
 compiler({
-  diagnostics: false,        // silence the MJX001–MJX004, MJX007 and MJX015–MJX018 compile-time warnings (default: on)
+  diagnostics: false,        // silence the MJX001–MJX004 and MJX015–MJX018 compile-time warnings (default: on)
   explain: 'pages/Home',     // print "what did this expression compile to" for matching files
                              //   true = every file; string = path includes; RegExp = test(id)
   exclude: 'legacy/',        // files the plugin leaves alone (string = path includes; RegExp = test(id); (id) => boolean); their JSX goes to Vite's own transform; a production build still strips their dev-only code
@@ -1016,10 +1016,11 @@ not run and `parent` is `null`; put setup that touches the members in `ctor` or 
 | `bindings` | `BindingCollection` (see jsx-and-reactivity.md). |
 | `class.add(...)`, `class.remove(...)`, `class.has(name)` | Ref-counted class management; accepts strings, arrays, `{ name: condition }` objects (a function value is a live condition, any other value is read once) or getters. `class.remove('**')` clears everything. `has` reads the element's `classList`. |
 | `attr.add({...})`, `attr.remove(key)`, `attr.has(key)`, `attr.get(key)` | Set attributes; `remove` also stops a reactive attribute getter; `has` reads the element; `get` returns the element's value, else the last value given to `add`, else `null`. |
+| `attr.hold({...})` | Holds values over the component's own and returns an `IDisposable`. While held, the component's own writes to those keys (a live getter, `attr.add`, `attr.remove`, a `bindings.add` binding that writes the element's property of the same name) stay aside and do not reach the element; `reState()`, `setState()` and a transport do not bring them back. `dispose()` returns each key to the component's own current value. Holds on one key stack: the newest shows, the last one disposed returns the own value (component-libraries.md). |
 | `style(v)` | String, object, or getter → inline style. |
 | `setText(s)` | textContent. |
-| `motif` | Namespace (`ComponentMotif`) for the framework operations below. A subclass may define its own `show`, `on`, `clear`, `options`… without breaking `x-display`, transitions, list keys or dispose; the framework only calls `this.motif.*`. Members: `show`, `hide`, `toggle`, `on`, `off`, `trigger`, `addHandler`, `clear`, `register`, `setDisposable`, `stopAnimations`, `options`. |
-| `motif.on/off/trigger/addHandler` | Events (events-and-forms.md). |
+| `motif` | Namespace (`ComponentMotif`) for the framework operations below. A subclass may define its own `show`, `on`, `clear`, `options`… without breaking `x-display`, transitions, list keys or dispose; the framework only calls `this.motif.*`. Members: `show`, `hide`, `toggle`, `on`, `off`, `trigger`, `isEventFrom`, `addHandler`, `clear`, `register`, `setDisposable`, `stopAnimations`, `options`. |
+| `motif.on/off/trigger/addHandler`, `motif.isEventFrom(e)` | Events (events-and-forms.md). |
 | `motif.show()/hide()/toggle()`, `isVisible`, `isWait` | Visibility (lifecycle-and-dispose.md). |
 | `motif.options.hideStrategy` | `'placeholder'`, `'detach'` or `'auto'` (default, behaves as `'placeholder'`). Give it in JSX through the `options` prop (`options={{ hideStrategy: 'detach' }}`) or assign `this.motif.options.hideStrategy` in code. A bare `hideStrategy="detach"` attribute is not special. |
 | `motif.options.display` | Getter returns `isVisible`; assigning `true`/`false` calls `motif.show()`/`motif.hide()`. |
@@ -1529,7 +1530,8 @@ On a **plain DOM tag** the spread object is applied as if the attributes were wr
 → attribute. Getters stay live; functions that take parameters (`renderItem: (x) => …`) are skipped.
 Inline attributes are applied after the spread, so `<div {...p} id="fixed"/>` keeps `id="fixed"`, even when
 `p.id` is a getter: the inline write owns the attribute and the getter stops writing it (the spread's other
-getters stay live). The same rule holds for `attr.add`: the last `attr.add` for a key owns that key. It holds for
+getters stay live). The same rule holds for `attr.add`: the last `attr.add` for a key owns that key (to put a value over a key for a
+while and get the own value back, use `attr.hold`, see components.md). It holds for
 `value`/`checked`/`selected` as well (a later `bindings.add('value', …)` replaces the earlier binding; the `x-model`
 binding is not replaced) and per key for `style`: an inline `style={{ color: 'blue' }}` takes only `color` from a spread
 style getter, whose other keys stay live, and an inline style string takes the whole attribute.
@@ -1613,7 +1615,7 @@ not have.
 | `x-html={() => html}` | Reactive `innerHTML` (unsafe with untrusted input). |
 | `x-text`, `x-value`, `x-watch`, `x-model` | Compile to `sender.bindings.text(…)` / `.value(…)` / `.watch(…)` / `.model(…)`. `x-text` sets the element's whole `textContent`: on its first change it removes the element's other children, so write `{() => text}` as a child for live text next to siblings. `x-model={() => s.q}` (or `x-model={s.q}`) becomes `bindings.model(() => s.q, v => { s.q = v })`: two-way, and the owner object is read again on every write. A value that is not a member access binds one-way (events-and-forms.md). |
 | `x-inject={v}` | Passed as the prop `inject` (no attribute on a plain DOM tag). |
-| `x-foo` (unknown) | Passed as the prop `onfoo`; compiler warning `MJX007`. `x-bind`, `x-focus`, `x-list`, `x-loop`, `x-effect`, `x-reload`, `x-interrupt`, `x-to` are compile errors (`MJX006`). |
+| `xFoo`, `x-foo`, `x:foo` (not a core name) | Passed on exactly as written: a prop on a component, an attribute on a plain DOM tag. |
 | `x-wait={() => bool}` | While `true`, the component is held back from the DOM. |
 | `x-display={() => bool}` | Show/hide (uses `hideStrategy`). |
 | `x-chunk` / `x-chunk={50}` | Builds the element's children in slices: the first 100 added together (or exactly n with a number) build at once, the rest leave a `<!--h-->` trace and build in order over the next frames, as many per frame as keep the frame near 50 ms (at least n with a number); `.map` rows under it are created only on their turn, with the index they have then. No value or a number; a string, object or arrow function stops the build with `MJX012`. `options: { chunk: true }` or `options: { chunk: 50 }` in code. |
@@ -1719,7 +1721,7 @@ Limits of a property binding:
   `bindings.remove(binding)` (the binding `add` returned) hands the property to code.
 
 `add(binding)` registers your own binding object: anything with `propertyName`, `dataSource`, `activate()`,
-`deactivate()` and `reActivate()` (the `IBaseBinding` shape; the type is not exported and the object is matched
+`deactivate()` and `reActivate()` (the `IBaseBinding` shape; the type is exported from `@motifx/core` and the object is matched
 by shape). It joins the same registry, so `setState()` / `reState()` call its `reActivate()`, `remove(binding)`
 and `clear()` call its `deactivate()`, and so does disposing the component. Without an optional `pause()`
 method, the pause before a dispose calls `deactivate()` too, so it can run twice and must be safe to repeat.
@@ -1958,9 +1960,8 @@ const state = reactive({ todos: [{ id: 1, title: 'Buy milk', done: false }] });
   their row when the same value stays at the same index, or anywhere when the render function takes
   no `index` parameter. An object item's row is reused when it moves, so the `index` a render function
   receives is the position when the row was built; a sort does not update it.
-- **`key`**: still give a stable unique value; it identifies items. It does not take part in matching
-  and does not change DOM reuse; a duplicate key raises the `MJX202` dev warning, and a `.map` without
-  `key` raises the compiler warning `MJX003`.
+- **`key`**: optional; it identifies items. It does not take part in matching and does not change DOM
+  reuse. If you write one, keep it stable and unique: a duplicate key raises the `MJX202` dev warning.
 - Items are reactive: mutating `todo.done` updates only that row.
 - `{state.todos.filter(t => !t.done).map(...)}` is reactive when the filter reads reactive fields.
 - `items.map(function (item) { … }, ctx)`: the second `map` argument is honoured as `this`.
@@ -2178,6 +2179,7 @@ this.motif.on('x:built', (sender, e) => …); // lifecycle events via the x: pre
 this.motif.on('custom-thing', handler, false); // 3rd arg false = internal event only (no addEventListener)
 this.motif.trigger('custom-thing', { data: 1 }); // fire internal/custom event
 this.motif.off('click', handler);
+this.motif.isEventFrom(e);                   // true when the DOM event started on this component's element or inside it; a fragment component answers for its content elements; still right after the event has finished; false for a motif.trigger payload
 this.motif.addHandler('click', handler);     // same as motif.on(event, handler)
 this.motif.toggle();                          // hide when visible, show otherwise
 ```
@@ -3881,6 +3883,45 @@ export function onLanguage(component: ComponentBase, draw: () => void) {
   document. A grid that rewrote its per-column sheet on every step of a column resize spent 60–110 ms per step; writing
   the sheet only when its text changed removed the long tasks.
 
+## A temporary attribute on the developer's component
+
+- A library may have to give an attribute for a while to a component the developer wrote and placed inside it:
+  `disabled`, `tabindex`, `aria-*`. `attr.add` does not fit: on the key it writes it removes the developer's binding
+  and cannot give the old value back.
+- `attr.hold` keeps the value over the component's own and returns an `IDisposable`:
+
+```ts
+const held = part.attr.hold({ disabled: true, tabindex: -1, 'aria-disabled': 'true' });
+this.motif.register(held);            // released with this component; or call held.dispose()
+```
+
+- `dispose()` returns each key to the component's own value at that moment. While held, what the component writes
+  to those keys stays aside and does not reach the element: a new value from a live getter, `attr.add`,
+  `attr.remove`, and a `bindings.add` binding that writes the element's property of the same name (`disabled`,
+  `tabIndex`, `ariaLabel`). `reState()`, `setState()` and a transport do not break the hold.
+- What comes back is what the element had when the hold began, also an attribute `attr` never wrote and one that
+  was absent. If the component wrote to the key during the hold, its last write comes back.
+- Holds on one key stack: the element shows the newest; whichever is disposed first, the own value returns when the
+  last one is disposed.
+- It writes by the rule of `attr.add`: the key is written on every element. Giving `disabled` only to elements that
+  have it is the caller's job (`'disabled' in part.element`). A held value is written once; a function is not
+  followed.
+
+## The component an event came from
+
+- `part.motif.isEventFrom(e)` is `true` when the DOM event started on the component's element or inside it. A
+  component without an element answers for its content elements. The answer holds after the event has finished
+  (when `composedPath()` is already empty) and across an open shadow root; a closed shadow root hides its inside
+  from a listener outside it.
+
+```ts
+this.motif.on('click:capture', (_sender, e) => {
+  if (part.motif.isEventFrom(e)) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+});
+```
+
 ## Lifetime
 
 - Disposing a component clears its own fields to `undefined`. Callbacks that come later (timers, promises,
@@ -3993,8 +4034,10 @@ isBuilt, isInitialized (false in onInitializing, true from onInitialized on), is
 
 // component.motif (ComponentMotif): framework operations; a subclass may define its own show/on/clear/options
 motif.on(event, cb, domEvent = true): Promise<this>; motif.off(event, cb): Promise<this>; motif.trigger(event, args): Promise<this>; motif.addHandler(event, handler)
+motif.isEventFrom(e): boolean                          // the DOM event started on this component's element or inside it (content elements for a fragment component)
 motif.show(): Promise; motif.hide(): Promise; motif.toggle()
 motif.clear(): Promise; motif.register(d: IDisposable); motif.setDisposable(fn); motif.stopAnimations(): Promise<void>
+attr.add(bag); attr.remove(key); attr.has(key); attr.get(key); attr.hold(bag): IDisposable   // hold: values kept over the component's own; dispose() returns each key to the own current value
 motif.options                                          // transition, hideStrategy, disableDisposal, chunk
 ```
 
@@ -4055,7 +4098,7 @@ getTree(path = [], depth = Infinity)  // { path, type, tag, built, visible, wait
 coreVersion                           // version of @motifx/core, next to version (the contract version, 2)
 getElement(path) / pathOfElement(node) // in any document of the app; null for [] and for a node under no root
 getDocuments()                        // the page document first, then the connected ones (app.windows windows, connectDocument); documents:changed says when to reread
-inspect(path)                         // props (getters not called), fields (own fields, framework internals left out), functionProps (function component root), bindings, events, hooks, classes, attributes, services, effects, extensions, window (window roots only: { kind, title, open, components })
+inspect(path)                         // props (getters not called), fields (own fields, framework internals left out), functionProps (function component root), bindings, events, hooks, classes, attributes ({ name, value, reactive }; a key held with attr.hold also has held: true and heldValue, the value the element shows, while value stays the component's own), services, effects, extensions, window (window roots only: { kind, title, open, components })
 readValue(path, 'props' | 'functionProps' | 'fields', keys) // one level of a nested value: { value, entries: [{ key, value, getter? }], total }
                                       // a signal or computed previews as { kind: 'signal', type, value, stale? }; paths continue into its value
 readStore(id, keys)                   // same, for a store from getStores()
@@ -4231,8 +4274,7 @@ to `errorHandler.addListener` (original error in `cause`); "dev warning" prints 
 | `MJX602`–`MJX605` | thrown | `Resilience`: circuit open / bulkhead queue full / rate limit exceeded / timeout (`TimeoutError`) |
 
 Compiler (`@motifx/compiler`): warnings `MJX001` (block-bodied arrow with parameters in child position declares locals the
-branches cannot see), `MJX002` (camelCase DOM event name on a component tag), `MJX003` (`.map()` item without
-`key`), `MJX004` (a reactive getter scans a reactive list by key: `find`/`findIndex`/`some`/`every` with an `x.field === value`
+branches cannot see), `MJX002` (camelCase DOM event name on a component tag), `MJX004` (a reactive getter scans a reactive list by key: `find`/`findIndex`/`some`/`every` with an `x.field === value`
 predicate; n components doing this cost n² reads per change, keep a keyed map or read with `untracked`), `MJX017` (a reactive
 getter writes a reactive value it also reads: `++`, `+=` or an assignment to a field read elsewhere in the getter; it retriggers
 itself; plain class fields and fields the getter never reads are fine; to keep a latch, read the flag inside `untracked`, wrapping
@@ -4240,12 +4282,11 @@ the write alone does not help), `MJX018` (`sort`/`reverse` on a reactive list in
 reactive getter, or `push`/`pop`/`shift`/`unshift`/`splice` when the getter also reads that list; work on a copy; these three
 checks recognise `this.state`, `this.props`, class fields built with a core store factory in an initializer or the constructor,
 same-file module stores and aliases of those inside the getter, and count callbacks of synchronous array methods as part of
-the getter; imported stores, stores created inside a function, injected services and a function component's `props` are not recognised), `MJX007` (unknown `x-*` directive, passed on
-as `on<name>`), `MJX015` (a class component override of a `ComponentBase` method/accessor that does not reach
+the getter; imported stores, stores created inside a function, injected services and a function component's `props` are not recognised), `MJX015` (a class component override of a `ComponentBase` method/accessor that does not reach
 `super` on every path; also checked in `.ts`/`.js` files, base followed across files), `MJX016` (a `switch` or
 `return a ? b : c` getter that cannot be lowered runs as `bindings.method`, no branch is kept); `MJX005` from `motif-lint`
-(ternary on a prop not typed `Bind<T>`), which also reports `MJX015`; build errors `MJX006`
-(unsupported directive), `MJX008` (`function () {}` as a JSX child), `MJX009` (string/boolean event handler),
+(ternary on a prop not typed `Bind<T>`), which also reports `MJX015`; build errors
+`MJX008` (`function () {}` as a JSX child), `MJX009` (string/boolean event handler),
 `MJX010` (invalid lifecycle hook value), `MJX011` / `MJX012` (invalid directive value / object literal, or an `x-chunk` value that cannot be a number),
 `MJX013` (namespaced tag name such as `<svg:rect>`, or a spread child `{...items}`; a lowercase non-HTML
 name such as `<card>` is no error, it resolves to the identifier in scope and a missing one fails at runtime
@@ -4386,12 +4427,10 @@ to the submit event, a string is written as the attribute (`references/events-an
   code frame: `MJX001` (block-bodied arrow with parameters declaring locals then returning a conditional →
   `ReferenceError`), `MJX002` (camelCase DOM event name on a component tag — `<Comp onChange>` binds
   a DOM listener, not a callback prop; lowercase `<Button onclick>` is the deliberate spelling and is
-  never warned), `MJX003` (`.map()` item without `key`; rows are matched by the item object, so the key only feeds the
-  `MJX202` duplicate check), `MJX004` (a reactive getter looks an item up by scanning a reactive list with
+  never warned), `MJX004` (a reactive getter looks an item up by scanning a reactive list with
   `find`/`findIndex`/`some`/`every` and an `x.field === value` predicate: n components → n² reads per change; use a keyed
   map or `untracked`), `MJX017` (a reactive getter writes a reactive value it also reads; it retriggers itself), `MJX018`
-  (`sort`/`reverse` on a reactive list inside a getter, or `push`/… when the getter also reads the list; sort a copy), `MJX007` (unknown `x-*` name; it is passed on
-  as an `on<name>` prop), `MJX015` (a class component override of `build`/`dispose`/`style`/… that
+  (`sort`/`reverse` on a reactive list inside a getter, or `push`/… when the getter also reads the list; sort a copy), `MJX015` (a class component override of `build`/`dispose`/`style`/… that
   can finish without reaching `super`; checked in `.ts`/`.js` files too), `MJX016` (a `switch` or
   `return a ? b : c` getter the compiler cannot lower — non-literal `case` label, `return` or JSX before the
   `switch`, `break` leaving it — runs as `bindings.method`: no branch is kept). Disable with
@@ -4399,9 +4438,9 @@ to the submit event, a string is written as the attribute (`references/events-an
   reports `MJX005`: a ternary on a component prop whose declared type is not `Bind<T>` (the compiler
   cannot see prop types; TypeScript does not see the getter wrapping). A hit is a real contract
   violation.
-- **Some JSX fails the build.** `x-reload`, `x-bind`, `x-effect`, `x-focus`, `x-interrupt`, `x-to`,
-  `x-list`, `x-loop` are not directives (`MJX006`); use `x-wait`/`x-display`, `{items.map(i => <X key={i.id}/>)}`,
-  `effect(...)` or `ref` + `focus()` instead. A `function () {}` child is `MJX008` (write `{() => …}`).
+- **Some JSX fails the build.** A `function () {}` child is `MJX008` (write `{() => …}`).
+- **An `x` name outside the core's directives does nothing by itself.** `x-focus`, `x-list` or a misspelled `x-wiat` is a plain
+  prop or attribute, with no warning; use `x-wait`/`x-display`, `{items.map(i => <X key={i.id}/>)}`, `effect(...)` or `ref` + `focus()`.
   A string/boolean event handler (`onclick="go()"`) is `MJX009`; invalid lifecycle/directive values and
   unsupported tag or child forms are `MJX010`–`MJX013`.
   The thrown error carries the code in `error.code`.

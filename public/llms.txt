@@ -90,7 +90,7 @@ The complete skill in one file is at the end of this list.
 - [Publishing an npm Library for MotifJS](https://motifjs.com/docs/publishing-libraries): Preparing an npm package with MotifJS components, services or wrappers; the package format, build, types, CSS, the prop contract, testing and pre-publish checks.
 - [The DevTools Contract](https://motifjs.com/docs/devtools): The __MOTIF_DEVTOOLS__ object turned on by useDevelopment(true); paths, events, the tree, component contents, the reactivity trace, counters, router and error records, write operations.
 - [DevTools for Packages](https://motifjs.com/docs/devtools-packages): registerDevtools for packages (describe, inspect, sources, commands, panels, events, reveal), operations and write records; the core side of a package's own DevTools panel.
-- [Writing a Component Library](https://motifjs.com/docs/component-libraries): Rules for a component library that applications use; props tracked by a single binding, the developer's data used as it is, nothing tracked inside the component, parts drawn by hand, writing only on change, lifetime traps and measuring.
+- [Writing a Component Library](https://motifjs.com/docs/component-libraries): Rules for a component library that applications use; props tracked by a single binding, the developer's data used as it is, nothing tracked inside the component, parts drawn by hand, writing only on change, a temporary attribute on the developer's component, the component an event came from, lifetime traps and measuring.
 
 ### Reference
 
