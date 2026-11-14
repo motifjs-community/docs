@@ -1903,6 +1903,15 @@ around the expression works). The same holds for `&&`, `{this.method()}`, `switc
 disposing. A branch is rebuilt only when its condition value changes (`Object.is`); in a nested ternary
 the inner branch is kept while the outer value stays the same.
 
+A branch does not have to be JSX: an expression in a branch behaves as if it were written alone in child
+position. `{note.pinned ? this.badge(note) : null}` places what the call returns (a component, or live
+text) and evaluates the call again when a value it read changes; `.map` in a branch builds a live list;
+`&&`, `??`, `||`, an array and `new` follow the same rule. A branch disposes its content when it is left,
+so an instance built outside it (kept in a variable or in `this.childs`) shows only the first time:
+`{open ? this.childs : null}` does not bring the children back. Show and hide the same instance with
+`x-display` / `x-wait`. In development mode `MJX131` warns when a disposed instance is about to be placed
+again.
+
 **Props inside a branch are snapshots.** The branch is built once and kept while the condition value
 stays the same, so a component prop written as a plain expression (`<Content data={state.data} />`,
 `<Badge count={state.n} />`) holds the value from when the branch was built, exactly as outside a
@@ -4233,6 +4242,7 @@ to `errorHandler.addListener` (original error in `cause`); "dev warning" prints 
 | `MJX128` | dev warning | a class component hides a `ComponentBase` member: override without `super` (`build`, `dispose`, `style` …), an instance field over a method/accessor, or a replaced `controls`/`attr`/`class`/`bindings`/`motif`/`element`/`parent`; once per class, behavior unchanged |
 | `MJX129` | reported | an `onfulfilled`/`onrejected` callback given to `using` threw or returned a rejected promise; original error in `cause` |
 | `MJX130` | reported | a child sliced by `x-chunk` threw while being built on its turn; the other children of the slice still build; a `.map` row that threw keeps its trace and is created again on the list's next update; original error in `cause` |
+| `MJX131` | dev warning | a disposed component was given to a `Frame` and was not placed; usually an instance kept in a variable or in `this.childs` used in a ternary, `&&` or `switch` branch, which the branch disposed at its first close; keep it with `x-display`/`x-wait` or create it inside the branch; once per instance |
 | `MJX121` | dev warning | compiled code's compiler contract differs from the `@motifx/core` runtime |
 | `MJX122` | reported | a component hook, `ref` callback or `x:` lifecycle listener threw (`The component onBuilt hook threw.`) |
 | `MJX123` | reported | an event handler or application event listener threw (`The 'click' event handler threw.`) |
@@ -4506,6 +4516,12 @@ to the submit event, a string is written as the attribute (`references/events-an
   read it as `Bind<T>`. A single element
   whose class/text is a getter is the cheapest for mutually exclusive one-liners. Consecutive
   `x-display` siblings under one parent are safe.
+- **A ready instance in a branch shows only once.** A ternary, `&&` or `switch` branch disposes its
+  content when it is left and builds it again on the next entry. JSX written inside the branch is
+  fine, but an instance built outside it (kept in a variable or in `this.childs`) cannot be built again:
+  `{open ? this.childs : null}` disposes the children at the first close and the place stays empty
+  afterwards, with nothing thrown. Use `<div x-display={() => open}>{this.childs}</div>` to show and
+  hide the same instance, or create it inside the branch. Development mode warns with `MJX131`.
 - Directives and lifecycle props written on a **function component** tag (`<InfoBar x-display={...} />`,
   `onBuilt`, `x-mounted`, `x-initializing` and the other lifecycle spellings, `initializeComponent`, `ref`) are applied to the root the function returns — the function does not
   forward anything. Class components receive them in the constructor.
